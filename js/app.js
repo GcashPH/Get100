@@ -19,6 +19,9 @@ const activeUser = localStorage.getItem('active_user');
 
 const POST_COOLDOWN = 10 * 60 * 1000; // 10 mins
 
+// Global variable for user code
+let myActiveReferralCode = "LOADING..."; 
+
 async function init() {
     if (!activeUser) { window.location.href = "index.html"; return; }
     
@@ -26,17 +29,37 @@ async function init() {
     document.getElementById('displayUserID').innerText = activeUser;
     document.getElementById('gcashPrefix').value = activeUser;
 
-    // 1. REAL-TIME BALANCE
+    // 1. REAL-TIME BALANCE & REFERRAL CODE FETCHING
     onSnapshot(doc(db, "users", activeUser), (snap) => {
         if (snap.exists()) {
             const data = snap.data();
+            
+            // Balance
             const bal = (data.earnings || 0).toFixed(2);
             document.getElementById('mainBalance').innerText = bal;
             document.getElementById('withdrawAmount').value = bal;
+            
+            // Kunin ang referral code mula sa database
+            myActiveReferralCode = data.referralCode || "NONE"; 
+            
+            // I-display sa Invite Modal
+            const displayRefEl = document.getElementById('displayreferralCode');
+            if(displayRefEl) displayRefEl.innerText = myActiveReferralCode;
+            
+            // I-update ang Facebook Promo Caption
+            const captionEl = document.getElementById('promoCaption');
+            if(captionEl) {
+                captionEl.value = `Earn 100 GCash Credits by Inviting Friends, Walang babayaran FREE! gamitin ang aking Referral Code: ${myActiveReferralCode}`;
+            }
+
+            // Hide redeem section kung nagamit na
             if (data.Referral_status === "Redeem") {
                 const rs = document.getElementById('redeemSection');
                 if(rs) rs.classList.add('hidden');
             }
+        } else {
+            console.log("User data not found in database!");
+            document.getElementById('displayreferralCode').innerText = "ERROR";
         }
     });
 
@@ -47,12 +70,23 @@ async function init() {
 // 2. MODAL TOGGLES
 const wModal = document.getElementById('withdrawModal');
 const iModal = document.getElementById('inviteModal');
+const shareModal = document.getElementById('shareModal');
 
 document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
 document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
 
 document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
 document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
+
+// Toggle Share Modal
+document.getElementById('openShareModal').onclick = () => {
+    iModal.style.display = 'none'; // Hide Invite Modal
+    shareModal.style.display = 'flex'; // Show Share Modal
+};
+document.getElementById('closeShareModal').onclick = () => {
+    shareModal.style.display = 'none';
+};
+
 
 // 3. GCASH LOGIC & CHANGE NUMBER (X Icon)
 const changeNumBtn = document.getElementById('changeNumber');
@@ -73,7 +107,7 @@ changeNumBtn.onclick = function() {
         this.classList.replace('fa-circle-check', 'fa-circle-xmark');
         this.style.color = 'var(--warning)';
     }
-    validateClaim(); // Re-validate on lock/unlock
+    validateClaim(); 
 };
 
 gcashConfirm.oninput = validateClaim;
@@ -86,13 +120,12 @@ function validateClaim() {
     }
 }
 
-// 4. LIVE FEED LOGIC (Bottom to Top via CSS flex-direction: column-reverse)
+// 4. LIVE FEED LOGIC
 function addFeedItem(text, type, senderID = "") {
     const logs = document.getElementById('chatLogs');
     const div = document.createElement('div');
     const isMe = senderID === activeUser;
     
-    // Classes: 'msg', then 'winner-msg', 'my-msg', or 'user-msg'
     let specificClass = 'user-msg';
     if (type === 'winner') specificClass = 'winner-msg';
     else if (isMe) specificClass = 'my-msg';
@@ -121,7 +154,7 @@ function startLiveFeed() {
     });
 
     spawnWinner();
-    setInterval(spawnWinner, 60000); // 1 min bot
+    setInterval(spawnWinner, 60000); 
 }
 
 // 5. POST REFERRAL LOGIC
@@ -158,38 +191,32 @@ function runCountdown(ms) {
     }, 1000);
 }
 
-// --- NEW LOGIC: COPY & SHARE FLOW ---
+document.getElementById('btnPostRef').onclick = async () => {
+    try {
+        const userSnap = await getDoc(doc(db, "users", activeUser));
+        if (!userSnap.exists()) return;
 
-// Modals
-const shareModal = document.getElementById('shareModal');
-const iModalRef = document.getElementById('inviteModal'); // Existing
+        const code = userSnap.data().referralCode || "GET100";
+        const last5 = activeUser.slice(-5);
+        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
 
-// Global variable for user code
-let myActiveReferralCode = "GET100"; 
+        await addDoc(collection(db, "chatlogs"), {
+            text: postText,
+            sender: activeUser,
+            timestamp: serverTimestamp()
+        });
 
-// Update `init()` function to fetch user's referral code and set the text
-// Ipagpalagay natin na nasa loob ito ng iyong onSnapshot(doc(db, "users", activeUser))
-// Idagdag mo ito sa loob ng snapshot handler mo:
-/*
-    myActiveReferralCode = data.referralCode || "NEW123";
-    document.getElementById('displayreferralCode').innerText = myActiveReferralCode;
-    // Auto-generate caption
-    document.getElementById('promoCaption').value = `Earn 100 GCash Credits my Inviting Friends, Walang babayaran FREE! gamitin ang aking Referral Code: ${myActiveReferralCode}`;
-*/
-
-// Toggle Share Modal
-document.getElementById('openShareModal').onclick = () => {
-    iModalRef.style.display = 'none'; // Hide Invite Modal
-    shareModal.style.display = 'flex'; // Show Share Modal
-};
-document.getElementById('closeShareModal').onclick = () => {
-    shareModal.style.display = 'none';
+        localStorage.setItem('last_post_time', Date.now().toString());
+        updatePostButton();
+    } catch (err) {
+        console.error("Post Error:", err);
+    }
 };
 
-// --- COPY FUNCTIONALITIES ---
+// --- COPY & SHARE FLOW LOGIC ---
+
 function copyToClipboard(textToCopy, iconElement) {
     navigator.clipboard.writeText(textToCopy).then(() => {
-        // Change icon to checkmark temporary for visual feedback
         const originalClass = iconElement.className;
         iconElement.className = "fa-solid fa-check text-success";
         iconElement.style.color = "#00b894";
@@ -218,14 +245,12 @@ document.getElementById('btnCopyUrl').onclick = function() {
     copyToClipboard(url, this);
 };
 
-// --- BUTTON FUNCTIONALITIES ---
-
 // Download Image Logic
 document.getElementById('btnDownloadImg').onclick = function() {
     const imgSrc = document.getElementById('promoImage').src;
     const a = document.createElement('a');
     a.href = imgSrc;
-    a.download = "Promo_Image.jpg"; // Set download filename
+    a.download = "Promo_Image.jpg"; 
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -233,31 +258,9 @@ document.getElementById('btnDownloadImg').onclick = function() {
 
 // Post to Facebook Intent
 document.getElementById('btnPostToFB').onclick = function() {
-    // Opens Facebook share dialog (You can replace the URL with your actual site URL later)
     const shareUrl = encodeURIComponent("https://yourwebsite.com");
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
 };
 
-document.getElementById('btnPostRef').onclick = async () => {
-    try {
-        const userSnap = await getDoc(doc(db, "users", activeUser));
-        if (!userSnap.exists()) return;
-
-        const code = userSnap.data().referralCode || "GET100";
-        const last5 = activeUser.slice(-5);
-        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
-
-        await addDoc(collection(db, "chatlogs"), {
-            text: postText,
-            sender: activeUser,
-            timestamp: serverTimestamp()
-        });
-
-        localStorage.setItem('last_post_time', Date.now().toString());
-        updatePostButton();
-    } catch (err) {
-        console.error("Post Error:", err);
-    }
-};
-
+// Initialize app on load
 window.onload = init;
