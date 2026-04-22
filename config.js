@@ -15,155 +15,124 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Elements
-const mobileInput = document.getElementById('mobile');
-const keypadSection = document.getElementById('keypad-section');
-const instruction = document.getElementById('instruction');
-const dots = document.querySelectorAll('.dot');
-const registerBtn = document.getElementById('btnRegister');
+// Global Variables
+let step = 0; // 1: Register Mobile, 2: Set Key, 3: Confirm Key, 4: Login Mode
+let tempKey = "", confirmKey = "", mobileNum = "", dbKey = "";
 
-let step = 0; // 0: Check, 1: Mobile, 2: Key, 3: Confirm, 4: Login
-let secretKey = "";
-let confirmKey = "";
-let mobileNum = "";
-let registeredKey = ""; // Key galing sa DB
+const getSignature = () => btoa(navigator.userAgent + screen.width);
 
-// --- 1. DEVICE SIGNATURE GENERATOR ---
-const getSignature = () => btoa(navigator.userAgent + screen.width + screen.height);
+window.onload = () => {
+    setTimeout(checkDevice, 2500); // Effect scanning delay
+};
 
-// --- 2. AUTO-CHECK ON LOAD ---
-window.addEventListener('load', async () => {
-    const localSig = localStorage.getItem('device_sig');
-    const currentSig = getSignature();
-
-    // Check database kung ang signature na ito ay registered
+async function checkDevice() {
+    const signature = getSignature();
     const dbRef = ref(db);
-    try {
-        // Nag-search tayo sa 'signatures' node (dapat i-save natin ito during reg)
-        const snapshot = await get(child(dbRef, `signatures/${currentSig}`));
-        
-        if (snapshot.exists()) {
-            // MATCH FOUND: Login Mode
-            const data = snapshot.val();
-            mobileNum = data.mobile;
-            
-            // Kunin ang actual user data para sa verification
-            const userSnap = await get(child(dbRef, `users/${mobileNum}`));
-            registeredKey = userSnap.val().secretKey;
-
-            showLoginUI();
-        } else {
-            // NO MATCH: Registration Mode
-            instruction.innerText = "Device not recognized. Please Register.";
-            step = 1;
-        }
-    } catch (e) {
-        console.error("Auth Error:", e);
-    }
-});
-
-function showLoginUI() {
-    step = 4;
-    document.getElementById('mobile-section').classList.add('hidden');
-    keypadSection.classList.remove('hidden');
-    instruction.innerHTML = `Welcome back!<br><small>User: ${mobileNum}</small><br>Enter 6-digit code`;
-    resetDots();
-}
-
-// --- 3. KEYPAD LOGIC ---
-document.querySelectorAll('.key').forEach(key => {
-    key.addEventListener('click', () => {
-        const val = key.getAttribute('data-val');
-        
-        if (step === 4) handleLoginPress(val); // Login mode
-        else handleRegistrationPress(val);    // Register mode
-    });
-});
-
-function handleLoginPress(num) {
-    secretKey += num;
-    updateDots(secretKey.length);
     
-    if (secretKey.length === 6) {
-        if (secretKey === registeredKey) {
-            alert("Login Success! Redirecting to Dashboard...");
-            // location.href = "dashboard.html";
+    try {
+        const snap = await get(child(dbRef, `signatures/${signature}`));
+        document.getElementById('scan-layer').classList.add('hidden');
+        document.getElementById('auth-layer').classList.remove('hidden');
+
+        if (snap.exists()) {
+            // RECOGNIZED
+            mobileNum = snap.val().mobile;
+            const userSnap = await get(child(dbRef, `users/${mobileNum}`));
+            dbKey = userSnap.val().secretKey;
+            
+            setupLoginUI();
         } else {
-            alert("Wrong Key! Try again.");
-            secretKey = "";
-            resetDots();
+            // NOT RECOGNIZED
+            setupRegisterUI();
+        }
+    } catch (e) { alert("Network Error"); }
+}
+
+function setupLoginUI() {
+    step = 4;
+    document.getElementById('ui-title').innerText = "Security Login";
+    document.getElementById('ui-subtitle').innerText = "Device Recognized";
+    document.getElementById('user-badge').classList.remove('hidden');
+    document.getElementById('mobile-box').classList.add('hidden');
+    document.getElementById('keypad-section').classList.remove('hidden');
+    
+    // Format: 09*****1234
+    const masked = mobileNum.substring(0, 2) + "*****" + mobileNum.substring(7);
+    document.getElementById('masked-id').innerText = masked;
+}
+
+function setupRegisterUI() {
+    step = 1;
+    document.getElementById('ui-title').innerText = "New Device";
+    document.getElementById('ui-subtitle').innerText = "Please Register to continue";
+    document.getElementById('mobile-box').classList.remove('hidden');
+}
+
+// Keypad Handling
+document.querySelectorAll('.key').forEach(k => {
+    k.onclick = () => {
+        const val = k.dataset.val;
+        if (step === 4) handleLogin(val);
+        else handleRegistration(val);
+    };
+});
+
+function handleLogin(val) {
+    tempKey += val;
+    updateDots(tempKey.length);
+    if (tempKey.length === 6) {
+        if (tempKey === dbKey) {
+            localStorage.setItem('active_user', mobileNum);
+            window.location.href = "main.html";
+        } else {
+            alert("Incorrect PIN");
+            tempKey = ""; resetDots();
         }
     }
 }
 
-function handleRegistrationPress(num) {
-    if (step === 2 && secretKey.length < 6) {
-        secretKey += num;
-        updateDots(secretKey.length);
-        if (secretKey.length === 6) {
-            setTimeout(() => {
-                step = 3;
-                instruction.innerText = "Confirm Secret Key";
-                resetDots();
-            }, 300);
-        }
-    } else if (step === 3 && confirmKey.length < 6) {
-        confirmKey += num;
+function handleRegistration(val) {
+    if (step === 2) {
+        tempKey += val;
+        updateDots(tempKey.length);
+        if (tempKey.length === 6) { step = 3; resetDots(); document.getElementById('ui-subtitle').innerText = "Confirm 6-digit PIN"; }
+    } else if (step === 3) {
+        confirmKey += val;
         updateDots(confirmKey.length);
         if (confirmKey.length === 6) {
-            if (secretKey === confirmKey) {
-                registerBtn.classList.remove('hidden');
-                instruction.innerText = "Keys match! Ready to register.";
-            } else {
-                alert("Keys do not match!");
-                secretKey = ""; confirmKey = ""; step = 2;
-                resetDots();
-            }
+            if (tempKey === confirmKey) document.getElementById('btnAction').classList.remove('hidden');
+            else { alert("Not Match"); resetReg(); }
         }
     }
 }
 
-// --- 4. REGISTRATION EXECUTION ---
-registerBtn.onclick = async () => {
-    const sig = getSignature();
-    try {
-        // Save User Data
-        await set(ref(db, 'users/' + mobileNum), {
-            mobile: mobileNum,
-            secretKey: secretKey,
-            deviceFingerprint: sig,
-            createdAt: new Date().toISOString()
-        });
+function resetReg() {
+    tempKey = ""; confirmKey = ""; step = 2; resetDots();
+    document.getElementById('ui-subtitle').innerText = "Set 6-digit PIN";
+}
 
-        // Save Signature Lookup (Para mabilis ang checking sa load)
-        await set(ref(db, 'signatures/' + sig), {
-            mobile: mobileNum
-        });
-
-        localStorage.setItem('device_sig', sig);
-        alert("Device Registered Successfully!");
-        location.reload();
-    } catch (e) {
-        alert("Error: " + e.message);
+document.getElementById('mobile').oninput = (e) => {
+    let v = e.target.value;
+    if (v.length === 11 && v.startsWith("09")) {
+        mobileNum = v;
+        document.getElementById('mobile-box').classList.add('hidden');
+        document.getElementById('keypad-section').classList.remove('hidden');
+        document.getElementById('ui-subtitle').innerText = "Set 6-digit PIN";
+        step = 2;
     }
 };
 
-// Mobile Input Listener
-mobileInput.addEventListener('input', (e) => {
-    let val = e.target.value;
-    if (val.length === 11 && val.startsWith("09")) {
-        mobileNum = val;
-        document.getElementById('mobile-section').classList.add('hidden');
-        keypadSection.classList.remove('hidden');
-        instruction.innerText = "Set 6-Digit Secret Key";
-        step = 2;
-    }
-});
+document.getElementById('btnAction').onclick = async () => {
+    const sig = getSignature();
+    await set(ref(db, 'users/' + mobileNum), { secretKey: tempKey });
+    await set(ref(db, 'signatures/' + sig), { mobile: mobileNum });
+    
+    localStorage.setItem('active_user', mobileNum);
+    window.location.href = "main.html";
+};
 
-function updateDots(len) {
-    dots.forEach((dot, i) => i < len ? dot.classList.add('active') : dot.classList.remove('active'));
+function updateDots(l) {
+    const dots = document.querySelectorAll('.dot');
+    dots.forEach((d, i) => i < l ? d.classList.add('active') : d.classList.remove('active'));
 }
-
-function resetDots() {
-    dots.forEach(dot => dot.classList.remove('active'));
-}
+function resetDots() { document.querySelectorAll('.dot').forEach(d => d.classList.remove('active')); }
