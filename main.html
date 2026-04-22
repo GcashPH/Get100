@@ -2,89 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Rewards | Anime POV Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Social Rewards | Mobile View</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
 
-    <div class="dashboard">
-        <div class="glass-card balance-section">
-            <div class="label">AVAILABLE BALANCE</div>
-            <div class="amount">₱<span id="mainBalance">0.00</span></div>
+    <div class="mobile-container">
+        
+        <div class="glass-panel text-center">
+            <div class="panel-subtitle">AVAILABLE BALANCE</div>
+            <div class="balance-display">₱<span id="mainBalance">0.00</span></div>
             
-            <div class="action-grid">
-                <button class="btn btn-primary" id="openWithdraw">CASH OUT</button>
-                <button class="btn btn-primary" id="openInvite">INVITE FRIENDS</button>
+            <div class="button-row">
+                <button class="btn btn-action" id="openWithdraw"><i class="fa-solid fa-wallet"></i> CASH OUT</button>
+                <button class="btn btn-action" id="openInvite"><i class="fa-solid fa-user-plus"></i> INVITE</button>
             </div>
         </div>
 
-        <div class="glass-card feed-section">
-            <div class="feed-header">
-                <i class="fa-solid fa-tower-broadcast"></i> LIVE NETWORK FEED
+        <div class="glass-panel feed-panel">
+            <div class="panel-header">
+                <i class="fa-solid fa-satellite-dish"></i> LIVE NETWORK FEED
             </div>
             
-            <div class="chat-logs" id="chatLogs"></div>
+            <div class="chat-area" id="chatLogs">
+                </div>
 
-            <div class="feed-footer">
+            <div class="post-area">
                 <button class="btn btn-post" id="btnPostRef">
-                    <i class="fa-solid fa-share-nodes"></i> POST MY REFERRAL CODE
+                    POST MY REFERRAL CODE
                 </button>
-                <div id="cooldownTimer" class="timer-box hidden">
-                    Ready in: <span id="timer">00:00</span>
+                <div id="cooldownTimer" class="timer-text hidden">
+                    Available in: <span id="timer">00:00</span>
                 </div>
             </div>
         </div>
+
     </div>
 
-    <div class="modal" id="withdrawModal">
-        <div class="modal-content anime-popup">
-            <span class="close-btn" id="closeWithdraw">&times;</span>
-            <h2 class="fancy-title">Cash Out</h2>
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="modal-card">
+            <button class="btn-close" id="closeWithdraw"><i class="fa-solid fa-xmark"></i></button>
+            <h2 class="modal-title">Cash Out</h2>
             
-            <div class="form-container">
-                <div class="input-block">
-                    <label class="anime-label">Amount to Withdraw</label>
-                    <input type="text" id="withdrawAmount" class="remastered-input readonly" readonly>
-                </div>
-
-                <div class="input-block">
-                    <label class="anime-label">GCash Account Number</label>
-                    <div class="prefill-group">
-                        <input type="text" id="gcashPrefix" class="remastered-input readonly" readonly>
-                        <i class="fa-solid fa-circle-xmark change-btn" id="changeNumber" title="Change Number"></i>
-                    </div>
-                </div>
-                
-                <div class="input-block">
-                    <label class="anime-label">Confirm Account Number</label>
-                    <input type="text" id="gcashConfirm" class="remastered-input" placeholder="Retype number manually..." onpaste="return false;">
-                </div>
-                
-                <button class="btn btn-claim" id="btnClaimGcash" disabled>CLAIM THRU GCASH</button>
+            <div class="form-group">
+                <label>Amount to Withdraw</label>
+                <input type="text" id="withdrawAmount" class="input-box locked" readonly>
             </div>
+
+            <div class="form-group">
+                <label>GCash Account Number</label>
+                <div class="input-with-icon">
+                    <input type="text" id="gcashPrefix" class="input-box locked" readonly>
+                    <i class="fa-solid fa-circle-xmark icon-btn" id="changeNumber"></i>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Confirm Account Number</label>
+                <input type="text" id="gcashConfirm" class="input-box" placeholder="Retype number here..." onpaste="return false;">
+            </div>
+            
+            <button class="btn btn-submit" id="btnClaimGcash" disabled>CLAIM THRU GCASH</button>
         </div>
     </div>
 
-    <div class="modal" id="inviteModal">
-        <div class="modal-content anime-popup">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <h2 class="fancy-title">Invite Friends</h2>
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal-card">
+            <button class="btn-close" id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+            <h2 class="modal-title">Invite Friends</h2>
             
-            <div class="user-id-box">
-                <p class="anime-label">YOUR ACCOUNT ID</p>
-                <h1 id="displayUserID" class="id-text">09193188409</h1>
+            <div class="user-id-wrapper">
+                <p>YOUR ACCOUNT ID</p>
+                <h1 id="displayUserID">09000000000</h1>
             </div>
 
-            <div id="redeemSection" class="redeem-container">
-                <p class="anime-label">REDEEM CODE</p>
-                <input type="text" id="inputFriendCode" class="remastered-input" placeholder="ENTER CODE">
-                <button class="btn btn-claim" id="btnVerify">VERIFY CODE</button>
+            <div class="form-group" id="redeemSection">
+                <label class="text-center" style="display:block;">REDEEM CODE</label>
+                <input type="text" id="inputFriendCode" class="input-box text-center" placeholder="ENTER 6-DIGIT CODE">
+                <button class="btn btn-submit mt-10" id="btnVerify">VERIFY CODE</button>
             </div>
-
-            </div>
+        </div>
     </div>
 
     <script type="module" src="js/app.js"></script>
