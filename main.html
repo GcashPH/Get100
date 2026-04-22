@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | SocialConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Anime Dashboard | 4D Experience</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@400;700&family=Montserrat:wght@800;900&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="styles/style.css">
 </head>
@@ -12,7 +12,7 @@
 
 <div class="dashboard">
     <div class="glass-card balance-section">
-        <div class="label">MY SAVINGS</div>
+        <div class="label">AVAILABLE BALANCE</div>
         <div class="amount">₱<span id="mainBalance">0.00</span></div>
         
         <div class="action-grid">
@@ -22,28 +22,23 @@
     </div>
 
     <div class="glass-card feed-section">
-        <div class="feed-header">
-            <i class="fa-solid fa-leaf"></i> LIVE NETWORK FEED
-        </div>
-
-        <div class="chat-logs" id="chatLogs">
-            </div>
-
+        <div class="feed-header"><i class="fa-solid fa-wind"></i> LIVE NETWORK FEED</div>
+        <div class="chat-logs" id="chatLogs"></div>
         <div class="feed-footer">
             <button class="btn btn-post" id="btnPostRef">
                 <i class="fa-solid fa-paper-plane"></i> POST MY REFERRAL CODE
             </button>
             <div id="cooldownTimer" class="timer-box hidden">
-                Next post in: <span id="timer">00:00</span>
+                Ready in: <span id="timer">00:00</span>
             </div>
         </div>
     </div>
 </div>
 
 <div class="modal" id="withdrawModal">
-    <div class="modal-content glass-morph">
+    <div class="modal-content anime-pop">
         <span class="close-btn" id="closeWithdraw">&times;</span>
-        <h2 class="modal-title">CASH OUT</h2>
+        <h2 class="modal-title fancy-font">Cash Out</h2>
         
         <div class="form-container">
             <div class="input-group">
@@ -53,14 +48,15 @@
 
             <div class="input-group">
                 <label>GCash Account Number</label>
-                <input type="text" id="gcashPrefix" class="input-field readonly" readonly>
+                <div class="prefill-wrapper">
+                    <input type="text" id="gcashPrefix" class="input-field readonly" readonly>
+                    <i class="fa-solid fa-circle-xmark change-icon" id="changeNumber" title="Change Number"></i>
+                </div>
             </div>
             
             <div class="input-group">
                 <label>Confirm Account Number</label>
-                <div class="input-wrapper">
-                    <input type="text" id="gcashConfirm" class="input-field" placeholder="Retype number manually..." onpaste="return false;">
-                </div>
+                <input type="text" id="gcashConfirm" class="input-field" placeholder="Retype for security..." onpaste="return false;">
             </div>
             
             <button class="btn btn-claim" id="btnClaimGcash" disabled>CLAIM THRU GCASH</button>
@@ -69,25 +65,22 @@
 </div>
 
 <div class="modal" id="inviteModal">
-    <div class="modal-content glass-morph">
+    <div class="modal-content anime-pop">
         <span class="close-btn" id="closeModal">&times;</span>
-        <div id="modalPage1">
-            <h2 class="modal-title">ACCOUNT PROFILE</h2>
-            <div class="id-badge">
-                <span id="displayUserID">09000000000</span>
-            </div>
-            
-            <div id="redeemSection" class="redeem-box">
-                <p class="small-label">HAVE A REFERRAL CODE?</p>
-                <input type="text" id="inputFriendCode" class="input-field" placeholder="ENTER 6-CHAR CODE">
-                <button class="btn btn-claim" id="btnVerify">VERIFY CODE</button>
-            </div>
-
-            <button class="btn btn-fb" id="goSharePage">
-                <i class="fa-brands fa-facebook"></i> SHARE ON FACEBOOK
-            </button>
+        <h2 class="modal-title fancy-font">Invite Friends</h2>
+        
+        <div class="user-id-container">
+            <p class="small-label">YOUR ACCOUNT ID</p>
+            <h1 id="displayUserID" class="id-center-text">09000000000</h1>
         </div>
-    </div>
+        
+        <div id="redeemSection" class="redeem-box">
+            <p class="small-label">REDEEM CODE</p>
+            <input type="text" id="inputFriendCode" class="input-field anime-input" placeholder="Enter 6-digit code">
+            <button class="btn btn-claim" id="btnVerify">VERIFY CODE</button>
+        </div>
+
+        </div>
 </div>
 
 <script type="module" src="js/app.js"></script>
