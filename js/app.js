@@ -22,14 +22,49 @@ const POST_COOLDOWN = 10 * 60 * 1000; // 10 mins
 // Global variable for user code
 let myActiveReferralCode = "LOADING..."; 
 
+// --- NEW: DEVICE SIGNATURE GENERATOR ---
+const getDeviceSignature = () => {
+    return btoa(navigator.userAgent + screen.width + screen.height).slice(0, 24);
+};
+
 async function init() {
+    // 1. BASIC CHECK: Kung walang user sa local storage
     if (!activeUser) { window.location.href = "index.html"; return; }
     
-    // UI Setup
-    document.getElementById('displayUserID').innerText = activeUser;
-    document.getElementById('gcashPrefix').value = activeUser;
+    // 2. SECURITY CHECK: I-verify kung authorized ang device signature
+    const currentSig = getDeviceSignature();
+    try {
+        const userRef = doc(db, "users", activeUser);
+        const userSnap = await getDoc(userRef);
 
-    // 1. REAL-TIME BALANCE & REFERRAL CODE FETCHING
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const authorizedSigs = userData.signatures || [];
+
+            // Kung ang current device ay wala sa listahan ng signatures ng user
+            if (!authorizedSigs.includes(currentSig)) {
+                console.error("Unauthorized device signature.");
+                localStorage.clear();
+                window.location.href = "index.html";
+                return;
+            }
+            
+            // Kung okay ang signature, ituloy ang UI Setup
+            document.getElementById('displayUserID').innerText = activeUser;
+            document.getElementById('gcashPrefix').value = activeUser;
+            
+        } else {
+            localStorage.clear();
+            window.location.href = "index.html";
+            return;
+        }
+    } catch (err) {
+        console.error("Auth Error:", err);
+        window.location.href = "index.html";
+        return;
+    }
+
+    // 3. REAL-TIME BALANCE & REFERRAL CODE FETCHING (Existing Logic)
     onSnapshot(doc(db, "users", activeUser), (snap) => {
         if (snap.exists()) {
             const data = snap.data();
@@ -67,50 +102,55 @@ async function init() {
     updatePostButton();
 }
 
-// 2. MODAL TOGGLES
+// 4. MODAL TOGGLES (Existing Logic)
 const wModal = document.getElementById('withdrawModal');
 const iModal = document.getElementById('inviteModal');
 const shareModal = document.getElementById('shareModal');
 
-document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
-document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
+if(document.getElementById('openWithdraw')) document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
+if(document.getElementById('closeWithdraw')) document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
 
-document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
-document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
+if(document.getElementById('openInvite')) document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
+if(document.getElementById('closeModal')) document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
 
 // Toggle Share Modal
-document.getElementById('openShareModal').onclick = () => {
-    iModal.style.display = 'none'; // Hide Invite Modal
-    shareModal.style.display = 'flex'; // Show Share Modal
-};
-document.getElementById('closeShareModal').onclick = () => {
-    shareModal.style.display = 'none';
-};
+if(document.getElementById('openShareModal')) {
+    document.getElementById('openShareModal').onclick = () => {
+        iModal.style.display = 'none'; 
+        shareModal.style.display = 'flex'; 
+    };
+}
+if(document.getElementById('closeShareModal')) {
+    document.getElementById('closeShareModal').onclick = () => {
+        shareModal.style.display = 'none';
+    };
+}
 
-
-// 3. GCASH LOGIC & CHANGE NUMBER (X Icon)
+// 5. GCASH LOGIC & CHANGE NUMBER (Existing Logic)
 const changeNumBtn = document.getElementById('changeNumber');
 const gcashPrefix = document.getElementById('gcashPrefix');
 const gcashConfirm = document.getElementById('gcashConfirm');
 const btnClaim = document.getElementById('btnClaimGcash');
 
-changeNumBtn.onclick = function() {
-    if (gcashPrefix.readOnly) {
-        gcashPrefix.readOnly = false;
-        gcashPrefix.classList.remove('locked');
-        gcashPrefix.focus();
-        this.classList.replace('fa-circle-xmark', 'fa-circle-check');
-        this.style.color = 'var(--success)';
-    } else {
-        gcashPrefix.readOnly = true;
-        gcashPrefix.classList.add('locked');
-        this.classList.replace('fa-circle-check', 'fa-circle-xmark');
-        this.style.color = 'var(--warning)';
-    }
-    validateClaim(); 
-};
+if(changeNumBtn) {
+    changeNumBtn.onclick = function() {
+        if (gcashPrefix.readOnly) {
+            gcashPrefix.readOnly = false;
+            gcashPrefix.classList.remove('locked');
+            gcashPrefix.focus();
+            this.classList.replace('fa-circle-xmark', 'fa-circle-check');
+            this.style.color = 'var(--success)';
+        } else {
+            gcashPrefix.readOnly = true;
+            gcashPrefix.classList.add('locked');
+            this.classList.replace('fa-circle-check', 'fa-circle-xmark');
+            this.style.color = 'var(--warning)';
+        }
+        validateClaim(); 
+    };
+}
 
-gcashConfirm.oninput = validateClaim;
+if(gcashConfirm) gcashConfirm.oninput = validateClaim;
 
 function validateClaim() {
     if (gcashConfirm.value === gcashPrefix.value && gcashPrefix.value.trim() !== '') {
@@ -120,9 +160,10 @@ function validateClaim() {
     }
 }
 
-// 4. LIVE FEED LOGIC
+// 6. LIVE FEED LOGIC (Existing Logic)
 function addFeedItem(text, type, senderID = "") {
     const logs = document.getElementById('chatLogs');
+    if(!logs) return;
     const div = document.createElement('div');
     const isMe = senderID === activeUser;
     
@@ -157,110 +198,119 @@ function startLiveFeed() {
     setInterval(spawnWinner, 60000); 
 }
 
-// 5. POST REFERRAL LOGIC
+// 7. POST REFERRAL LOGIC (Existing Logic)
 function updatePostButton() {
     const lastPost = localStorage.getItem('last_post_time');
     const btn = document.getElementById('btnPostRef');
     const timerBox = document.getElementById('cooldownTimer');
     
+    if(!btn) return;
     if (lastPost) {
         const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
         if (remaining > 0) {
             btn.disabled = true;
-            timerBox.classList.remove('hidden');
+            if(timerBox) timerBox.classList.remove('hidden');
             runCountdown(remaining);
             return;
         }
     }
     btn.disabled = false;
-    timerBox.classList.add('hidden');
+    if(timerBox) timerBox.classList.add('hidden');
 }
 
 function runCountdown(ms) {
     const span = document.getElementById('timer');
     const int = setInterval(() => {
-        const nowRemaining = parseInt(localStorage.getItem('last_post_time')) + POST_COOLDOWN - Date.now();
+        const lastPost = localStorage.getItem('last_post_time');
+        const nowRemaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
         if (nowRemaining <= 0) {
             clearInterval(int);
             updatePostButton();
         } else {
             const m = Math.floor(nowRemaining / 60000);
             const s = Math.floor((nowRemaining % 60000) / 1000);
-            span.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            if(span) span.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
         }
     }, 1000);
 }
 
-document.getElementById('btnPostRef').onclick = async () => {
-    try {
-        const userSnap = await getDoc(doc(db, "users", activeUser));
-        if (!userSnap.exists()) return;
+if(document.getElementById('btnPostRef')) {
+    document.getElementById('btnPostRef').onclick = async () => {
+        try {
+            const userSnap = await getDoc(doc(db, "users", activeUser));
+            if (!userSnap.exists()) return;
 
-        const code = userSnap.data().referralCode || "GET100";
-        const last5 = activeUser.slice(-5);
-        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
+            const code = userSnap.data().referralCode || "GET100";
+            const last5 = activeUser.slice(-5);
+            const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
 
-        await addDoc(collection(db, "chatlogs"), {
-            text: postText,
-            sender: activeUser,
-            timestamp: serverTimestamp()
-        });
+            await addDoc(collection(db, "chatlogs"), {
+                text: postText,
+                sender: activeUser,
+                timestamp: serverTimestamp()
+            });
 
-        localStorage.setItem('last_post_time', Date.now().toString());
-        updatePostButton();
-    } catch (err) {
-        console.error("Post Error:", err);
-    }
-};
+            localStorage.setItem('last_post_time', Date.now().toString());
+            updatePostButton();
+        } catch (err) {
+            console.error("Post Error:", err);
+        }
+    };
+}
 
-// --- COPY & SHARE FLOW LOGIC ---
+// --- COPY & SHARE FLOW LOGIC (Existing Logic) ---
 
 function copyToClipboard(textToCopy, iconElement) {
+    if(!textToCopy) return;
     navigator.clipboard.writeText(textToCopy).then(() => {
         const originalClass = iconElement.className;
         iconElement.className = "fa-solid fa-check text-success";
         iconElement.style.color = "#00b894";
         setTimeout(() => {
             iconElement.className = originalClass;
-            iconElement.style.color = ""; // reset
+            iconElement.style.color = ""; 
         }, 1500);
     });
 }
 
-// 1. Copy Own Referral Code
-document.getElementById('copyreferralCode').onclick = function() {
-    copyToClipboard(document.getElementById('displayreferralCode').innerText, this);
-};
+if(document.getElementById('copyreferralCode')) {
+    document.getElementById('copyreferralCode').onclick = function() {
+        copyToClipboard(document.getElementById('displayreferralCode').innerText, this);
+    };
+}
 
-// 2. Copy Caption
-document.getElementById('btnCopyCaption').onclick = function() {
-    const caption = document.getElementById('promoCaption').value;
-    const icon = this.querySelector('i');
-    copyToClipboard(caption, icon);
-};
+if(document.getElementById('btnCopyCaption')) {
+    document.getElementById('btnCopyCaption').onclick = function() {
+        const caption = document.getElementById('promoCaption').value;
+        const icon = this.querySelector('i');
+        copyToClipboard(caption, icon);
+    };
+}
 
-// 3. Copy URL
-document.getElementById('btnCopyUrl').onclick = function() {
-    const url = document.getElementById('shareUrl').value;
-    copyToClipboard(url, this);
-};
+if(document.getElementById('btnCopyUrl')) {
+    document.getElementById('btnCopyUrl').onclick = function() {
+        const url = document.getElementById('shareUrl').value;
+        copyToClipboard(url, this);
+    };
+}
 
-// Download Image Logic
-document.getElementById('btnDownloadImg').onclick = function() {
-    const imgSrc = document.getElementById('promoImage').src;
-    const a = document.createElement('a');
-    a.href = imgSrc;
-    a.download = "Promo_Image.jpg"; 
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-};
+if(document.getElementById('btnDownloadImg')) {
+    document.getElementById('btnDownloadImg').onclick = function() {
+        const imgSrc = document.getElementById('promoImage').src;
+        const a = document.createElement('a');
+        a.href = imgSrc;
+        a.download = "Promo_Image.jpg"; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+}
 
-// Post to Facebook Intent
-document.getElementById('btnPostToFB').onclick = function() {
-    const shareUrl = encodeURIComponent("https://yourwebsite.com");
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
-};
+if(document.getElementById('btnPostToFB')) {
+    document.getElementById('btnPostToFB').onclick = function() {
+        const shareUrl = encodeURIComponent("https://yourwebsite.com");
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
+    };
+}
 
-// Initialize app on load
 window.onload = init;
