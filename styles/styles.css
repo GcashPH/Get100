@@ -1,0 +1,230 @@
+:root {
+    --primary: #4f46e5;
+    --bg: #f8fafc;
+    --text: #1e293b;
+    --success: #22c55e;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    display: flex;
+    justify-content: center;
+}
+
+.dashboard {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Balance Card */
+.balance-card {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    padding: 30px 20px;
+    border-radius: 35px;
+    color: white;
+    box-shadow: 0 15px 30px rgba(79, 70, 229, 0.2);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.balance-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.8;
+    letter-spacing: 1px;
+}
+
+.balance-amount {
+    font-size: 3.2rem;
+    font-weight: 800;
+    margin: 5px 0;
+}
+
+/* Chat Box */
+.chat-box {
+    background: white;
+    border-radius: 30px;
+    padding: 20px;
+    height: 320px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.chat-logs {
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    padding: 5px;
+}
+
+.msg {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 18px;
+    background: #f1f5f9;
+    animation: slideIn 0.3s ease;
+    line-height: 1.4;
+}
+
+.winner {
+    border-left: 5px solid var(--success);
+    background: #f0fdf4;
+    color: #166534;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.gc-icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 360px;
+    border-radius: 35px;
+    position: relative;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px; right: 25px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #94a3b8;
+}
+
+/* Sections */
+.user-id-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.user-id-text {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.view-icon-btn {
+    background: #f1f5f9;
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--primary);
+}
+
+.divider {
+    border: none;
+    border-top: 2px double #e2e8f0;
+    margin: 20px 0;
+}
+
+.redeem-section {
+    background: #fffbeb;
+    padding: 15px;
+    border-radius: 20px;
+    border: 1px dashed #facc15;
+    margin-bottom: 20px;
+}
+
+.redeem-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-weight: 800;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.share-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.photo-box img {
+    width: 100%;
+    border-radius: 15px;
+    border: 1px solid #eee;
+}
+
+.caption-box {
+    font-size: 0.7rem;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.copy-btn {
+    width: 100%;
+    background: #1e293b;
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    border: none;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.shortlink-box {
+    margin-top: 20px;
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 15px;
+    font-size: 0.75rem;
+}
+
+.btn {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-invite { background: white; color: var(--primary); }
+.btn-fb { background: #1877F2; color: white; }
+.btn-verify { background: #000; color: white; }
+
+.hidden { display: none !important; }
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
