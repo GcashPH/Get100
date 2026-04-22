@@ -5,69 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | SocialConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #4f46e5; --bg: #f1f5f9; --text: #1e293b; }
+        :root { --primary: #4f46e5; --bg: #f8fafc; --text: #1e293b; --success: #22c55e; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; }
         .dashboard { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; }
-        
-        .card { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
-        .amount { font-size: 2.8rem; font-weight: 800; margin: 10px 0; }
-        
-        .chat-box { background: white; border-radius: 25px; padding: 15px; height: 350px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .chat-logs { flex-grow: 1; overflow-y: auto; font-size: 0.8rem; padding: 10px; border-bottom: 1px solid #f1f5f9; }
-        
-        .msg { margin-bottom: 10px; padding: 12px; border-radius: 18px; background: #f8fafc; animation: slideIn 0.3s ease; }
-        .winner { border-left: 4px solid #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
-        .mine { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
 
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; font-size: 0.9rem; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-post { background: #1e293b; color: white; }
-        .btn-fb { background: #1877F2; color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* Balance Section Remastered */
+        .balance-card { 
+            background: linear-gradient(135deg, #4f46e5, #7c3aed); 
+            padding: 30px 20px; border-radius: 35px; color: white;
+            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.2); text-align: center; margin-bottom: 20px;
+        }
+        .balance-label { font-size: 0.75rem; font-weight: 600; opacity: 0.8; letter-spacing: 1px; }
+        .balance-amount { font-size: 3.2rem; font-weight: 800; margin: 5px 0; }
+        
+        /* Chat Box */
+        .chat-box { background: white; border-radius: 30px; padding: 20px; height: 320px; display: flex; flex-direction: column; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .chat-logs { flex-grow: 1; overflow-y: auto; font-size: 0.85rem; padding: 5px; }
+        .msg { margin-bottom: 12px; padding: 12px; border-radius: 18px; background: #f1f5f9; animation: slideIn 0.3s ease; line-height: 1.4; }
+        .winner { border-left: 5px solid var(--success); background: #f0fdf4; color: #166534; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .gc-icon { width: 22px; height: 22px; }
 
-        /* Pop-up Adjustments */
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 85%; max-width: 340px; padding: 25px; border-radius: 30px; position: relative; text-align: center; }
+        /* Modal Styles */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; width: 90%; max-width: 360px; border-radius: 35px; position: relative; padding: 30px; box-sizing: border-box; overflow: hidden; }
+        .close-btn { position: absolute; top: 20px; right: 25px; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
+
+        /* User ID Section */
+        .user-id-box { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0; }
+        .user-id-text { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+        .view-icon-btn { background: #f1f5f9; border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--primary); }
+        
+        .divider { border: none; border-top: 2px double #e2e8f0; margin: 20px 0; }
+
+        /* Redeem Section */
+        .redeem-section { background: #fffbeb; padding: 15px; border-radius: 20px; border: 1px dashed #facc15; margin-bottom: 20px; }
+        .redeem-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; text-align: center; font-weight: 800; box-sizing: border-box; margin-bottom: 10px; }
+
+        /* Share Page Column Layout */
+        .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; text-align: left; }
+        .photo-box img { width: 100%; border-radius: 15px; border: 1px solid #eee; }
+        .caption-box { font-size: 0.7rem; color: #64748b; background: #f8fafc; padding: 8px; border-radius: 10px; position: relative; }
+        .copy-btn { width: 100%; background: #1e293b; color: white; padding: 8px; border-radius: 8px; font-size: 0.7rem; border: none; cursor: pointer; margin-top: 5px; }
+
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
+        .btn-invite { background: white; color: var(--primary); }
+        .btn-fb { background: #1877F2; color: white; }
+        .btn-verify { background: #000; color: white; }
         
         .hidden { display: none !important; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <div class="card">
-        <div style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-align: left;">WALLET BALANCE</div>
-        <div class="amount">₱<span id="balanceDisplay">0.00</span></div>
-        <button class="btn btn-main" id="openInvite">Invite Friends</button>
+    <div class="balance-card">
+        <div class="balance-label">AVAILABLE BALANCE</div>
+        <div class="balance-amount">₱<span id="mainBalance">0.00</span></div>
+        <button class="btn btn-invite" id="openInvite">INVITE & EARN</button>
     </div>
 
     <div class="chat-box">
-        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 10px;">COMMUNITY UPDATES</div>
+        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 15px;">LIVE NETWORK FEED</div>
         <div class="chat-logs" id="chatLogs"></div>
-        <button class="btn btn-post" id="btnPostRef">POST REFERRAL CODE</button>
     </div>
 </div>
 
-<div class="modal" id="modalInvite">
+<div class="modal" id="inviteModal">
     <div class="modal-content">
-        <span id="closeInvite" style="position:absolute; top:15px; right:20px; cursor:pointer;">✕</span>
+        <span class="close-btn" id="closeModal">×</span>
         
-        <div id="step-mycode">
-            <h3 style="margin-bottom:5px;">Your Code</h3>
-            <div id="myReferralCode" style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin: 15px 0;">......</div>
-            <button class="btn btn-fb" id="btnShareFB">Share to Facebook</button>
-            <button class="btn" id="btnNextPage" style="background:#e2e8f0; color:#475569;">Next Page ➔</button>
+        <div id="modalPage1">
+            <h3 style="text-align: center; margin: 0;">Account Profile</h3>
+            <div class="user-id-box">
+                <span class="user-id-text" id="displayUserID">09000000000</span>
+                <button class="view-icon-btn" id="viewMyCode"><i class="fa-solid fa-eye"></i></button>
+            </div>
+
+            <hr class="divider">
+
+            <div id="redeemSection" class="redeem-section">
+                <p style="font-size: 0.7rem; font-weight: 800; text-align: center; margin-bottom: 10px;">ENTER REFERRAL CODE</p>
+                <input type="text" id="inputFriendCode" class="redeem-input" placeholder="6-CHAR CODE">
+                <button class="btn btn-verify" id="btnVerify">VERIFY CODE</button>
+            </div>
+
+            <button class="btn btn-fb" id="goSharePage">SHARE ON FACEBOOK</button>
         </div>
 
-        <div id="step-redeem" class="hidden">
-            <h3 style="margin-bottom:15px;">Redeem Code</h3>
-            <div style="background:#fffbeb; padding:15px; border-radius:20px; border:1px dashed #facc15;">
-                <input type="text" id="friendCode" placeholder="Enter Friend's Code" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; text-align:center; font-weight:700; box-sizing:border-box;">
-                <button class="btn" id="btnVerify" style="background:black; color:white;">Claim ₱100.00</button>
+        <div id="modalPage2" class="hidden">
+            <h3 style="margin: 0;">Post to Social Media</h3>
+            <div class="share-grid">
+                <div class="photo-box">
+                    <img id="promoPhoto" src="https://via.placeholder.com/150?text=Get100+Promo" alt="Promo">
+                    <p style="font-size: 0.6rem; color: #94a3b8; margin-top: 5px;">Promo Image</p>
+                </div>
+                <div class="caption-box">
+                    <div id="captionText">Get ₱100 now! Use my code #Get100 #Referral_CODE</div>
+                    <button class="copy-btn" id="btnCopyCaption"><i class="fa-solid fa-copy"></i> Copy</button>
+                </div>
             </div>
-            <button class="btn" id="btnBackPage" style="background:none; color:#64748b; font-size:0.8rem;">← Back</button>
+
+            <div style="margin-top: 20px; background: #f1f5f9; padding: 12px; border-radius: 15px; font-size: 0.75rem;">
+                <strong>Short Link:</strong><br>
+                <a id="shortLink" href="#" style="color: var(--primary); text-decoration: none;">loading link...</a>
+            </div>
+
+            <button class="btn" id="backToP1" style="background: none; color: #64748b; font-size: 0.8rem; margin-top: 15px;">← Back to Profile</button>
         </div>
     </div>
 </div>
@@ -75,8 +121,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
-        getFirestore, doc, getDoc, updateDoc, setDoc, addDoc, collection, 
-        onSnapshot, query, orderBy, limit, serverTimestamp 
+        getFirestore, doc, getDoc, updateDoc, collection, 
+        onSnapshot, query, orderBy, limit 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -90,113 +136,107 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const activeUser = localStorage.getItem('active_user'); // Galing sa index.html
+    const activeUser = localStorage.getItem('active_user');
 
-    const generate6CharRef = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+    // UI State
+    const modal = document.getElementById('inviteModal');
+    const p1 = document.getElementById('modalPage1');
+    const p2 = document.getElementById('modalPage2');
 
-    // 1. GENERATE / FETCH OWN CODE
-    async function handleInviteClick() {
-        const userRef = doc(db, "users", activeUser);
-        const snap = await getDoc(userRef);
-        let data = snap.data();
+    // 1. AUTH & DATA SYNC
+    async function init() {
+        if (!activeUser) { window.location.href = "index.html"; return; }
+        document.getElementById('displayUserID').innerText = activeUser;
 
-        // Kung wala pang referral code, gawa at i-save sa DB
-        if (!data.referralCode) {
-            const newCode = generate6CharRef();
-            await updateDoc(userRef, { referralCode: newCode });
-            document.getElementById('myReferralCode').innerText = newCode;
-        } else {
-            document.getElementById('myReferralCode').innerText = data.referralCode;
+        // Real-time Balance & Status Sync
+        onSnapshot(doc(db, "users", activeUser), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('mainBalance').innerText = (data.earnings || 0).toFixed(2);
+                
+                // Redeem Section Logic
+                if (data.Referral_status === "Redeem") {
+                    document.getElementById('redeemSection').classList.add('hidden');
+                }
+            }
+        });
+
+        // Load Global Content (Photos & Links)
+        const contentSnap = await getDoc(doc(db, "app_data", "global_configs"));
+        if (contentSnap.exists()) {
+            const config = contentSnap.data();
+            document.getElementById('promoPhoto').src = config.share_photo || "https://via.placeholder.com/150";
+            document.getElementById('shortLink').innerText = config.short_link || "https://bit.ly/get100";
+            document.getElementById('shortLink').href = config.short_link || "#";
         }
-
-        // Check kung naka-redeem na para itago ang Next Page/Redeem section
-        if (data.RedeemCode === "YES") {
-            document.getElementById('btnNextPage').classList.add('hidden');
-        } else {
-            document.getElementById('btnNextPage').classList.remove('hidden');
-        }
-
-        document.getElementById('modalInvite').style.display = 'flex';
     }
 
-    // 2. REDEEM LOGIC
+    // 2. MODAL LOGIC
+    document.getElementById('openInvite').onclick = () => modal.style.display = 'flex';
+    document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+
+    document.getElementById('viewMyCode').onclick = async () => {
+        const snap = await getDoc(doc(db, "users", activeUser));
+        const myCode = snap.data().referralCode || "Generating...";
+        alert("Your Referral Code: " + myCode);
+    };
+
+    document.getElementById('goSharePage').onclick = async () => {
+        const snap = await getDoc(doc(db, "users", activeUser));
+        const code = snap.data().referralCode;
+        document.getElementById('captionText').innerText = `Get ₱100 instantly! Register here and use my code. #Get100 #Referral_${code}`;
+        p1.classList.add('hidden');
+        p2.classList.remove('hidden');
+    };
+
+    document.getElementById('backToP1').onclick = () => {
+        p2.classList.add('hidden');
+        p1.classList.remove('hidden');
+    };
+
+    // 3. VERIFY REFERRAL
     document.getElementById('btnVerify').onclick = async () => {
-        const inputCode = document.getElementById('friendCode').value.trim().toUpperCase();
+        const codeInput = document.getElementById('inputFriendCode').value.trim().toUpperCase();
         const userRef = doc(db, "users", activeUser);
         const snap = await getDoc(userRef);
         const myData = snap.data();
 
-        // Logic: Bawal ang sariling code
-        if (inputCode === myData.referralCode) {
-            alert("Error: You cannot use your own referral code!");
+        if (codeInput === myData.referralCode) {
+            alert("Bawal gamitin ang sariling code!");
             return;
         }
 
-        if (inputCode.length === 6) {
-            // Update Database: RedeemCode = "YES" at dagdag balance
-            await updateDoc(userRef, { 
-                RedeemCode: "YES",
-                earnings: (myData.earnings || 0) + 100 
+        if (codeInput.length === 6) {
+            await updateDoc(userRef, {
+                Referral_status: "Redeem",
+                earnings: (myData.earnings || 0) + 100
             });
-            alert("Success! ₱100.00 added to your balance.");
-            location.reload(); // Para mag-update ang UI
-        } else {
-            alert("Invalid Code.");
+            alert("Verification Success! +₱100 Added.");
         }
     };
 
-    // 3. UI NAVIGATION
-    document.getElementById('openInvite').onclick = handleInviteClick;
-    document.getElementById('closeInvite').onclick = () => {
-        document.getElementById('modalInvite').style.display = 'none';
-        document.getElementById('step-mycode').classList.remove('hidden');
-        document.getElementById('step-redeem').classList.add('hidden');
+    // 4. COPY CAPTION
+    document.getElementById('btnCopyCaption').onclick = () => {
+        const text = document.getElementById('captionText').innerText;
+        navigator.clipboard.writeText(text);
+        alert("Caption Copied!");
     };
 
-    document.getElementById('btnNextPage').onclick = () => {
-        document.getElementById('step-mycode').classList.add('hidden');
-        document.getElementById('step-redeem').classList.remove('hidden');
-    };
+    // 5. LIVE WINNERS FEED
+    function spawnWinner() {
+        const id = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
+        const div = document.createElement('div');
+        div.className = "msg winner";
+        div.innerHTML = `<img src="images/gc_icon.png" class="gc-icon"> User ${id} received ₱100.00 GCash!`;
+        const logs = document.getElementById('chatLogs');
+        logs.appendChild(div);
+        logs.scrollTop = logs.scrollHeight;
+    }
 
-    document.getElementById('btnBackPage').onclick = () => {
-        document.getElementById('step-mycode').classList.remove('hidden');
-        document.getElementById('step-redeem').classList.add('hidden');
-    };
-
-    document.getElementById('btnShareFB').onclick = () => {
-        const code = document.getElementById('myReferralCode').innerText;
-        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=Use my referral code ${code} to get ₱100!`;
-        window.open(url, '_blank');
-    };
-
-    // 4. SYNC DATA
     window.onload = () => {
-        if(!activeUser) window.location.href = "index.html";
-        onSnapshot(doc(db, "users", activeUser), (doc) => {
-            if(doc.exists()) document.getElementById('balanceDisplay').innerText = (doc.data().earnings || 0).toFixed(2);
-        });
-        
-        // Chat listener
-        onSnapshot(query(collection(db, "chatlogs"), orderBy("timestamp", "asc"), limit(20)), (snap) => {
-            document.getElementById('chatLogs').innerHTML = "";
-            snap.forEach(d => {
-                const msgData = d.data();
-                const div = document.createElement('div');
-                div.className = `msg ${msgData.sender === activeUser ? 'mine' : ''}`;
-                div.innerHTML = msgData.text;
-                document.getElementById('chatLogs').appendChild(div);
-            });
-        });
-    };
-
-    document.getElementById('btnPostRef').onclick = async () => {
-        const snap = await getDoc(doc(db, "users", activeUser));
-        const code = snap.data().referralCode || "NONE";
-        await addDoc(collection(db, "chatlogs"), {
-            text: `User ${activeUser.slice(-4)}: Use my code <b>${code}</b>`,
-            sender: activeUser,
-            timestamp: serverTimestamp()
-        });
+        init();
+        setInterval(spawnWinner, 45000); // Bawat 45 seconds
+        setTimeout(spawnWinner, 2000); // Initial
     };
 </script>
 
