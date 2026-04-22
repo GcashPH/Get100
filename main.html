@@ -16,6 +16,28 @@
         <div class="balance-amount">₱<span id="mainBalance">0.00</span></div>
 
         <button class="btn btn-withdraw" id="openWithdraw">WITHDRAWAL</button>
+        <div class="modal-content neon-border">
+    <span class="close-btn" id="closeWithdraw">×</span>
+    <h3 class="neon-text-blue">CASH OUT</h3>
+    
+    <div class="withdraw-form" style="text-align: left;">
+        <label style="font-size: 0.7rem; color: #94a3b8;">Amount to Withdraw</label>
+        <input type="text" id="withdrawAmount" class="withdraw-input" readonly 
+               style="background: rgba(255,255,255,0.05); color: #fff; margin-bottom: 15px;">
+
+        <label style="font-size: 0.7rem; color: #94a3b8;">GCash Number</label>
+        <input type="text" id="gcashPrefix" class="withdraw-input" readonly>
+        
+        <div style="position: relative; margin-top: 15px;">
+            <label style="font-size: 0.7rem; color: #94a3b8;">Confirm GCash Number</label>
+            <input type="text" id="gcashConfirm" class="withdraw-input" placeholder="Retype number...">
+            </div>
+        
+        <button class="btn btn-neon-blue" id="btnClaimGcash" disabled style="opacity: 0.5;">
+            CLAIM THRU GCASH
+        </button>
+    </div>
+</div>
         <button class="btn btn-invite" id="openInvite">INVITE & EARN</button>
     </div>
 
