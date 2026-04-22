@@ -3,23 +3,14 @@ import {
     getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, collection, query, where, getDocs 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// --- 1. FIREBASE CONFIGURATION ---
-const firebaseConfig = {
-    apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-    authDomain: "get100-8333e.firebaseapp.com",
-    projectId: "get100-8333e",
-    storageBucket: "get100-8333e.firebasestorage.app",
-    messagingSenderId: "242341429618",
-    appId: "1:242341429618:web:c596b279f746dc22851deb"
-};
-
+const firebaseConfig = { /* IYONG FIREBASE CONFIG DITO */ };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- 2. DEVICE SIGNATURE GENERATOR ---
+// 1. UNIQUE DEVICE SIGNATURE
 const currentSig = btoa(navigator.userAgent + screen.width).slice(0, 24);
 
-// --- 3. UI ELEMENTS ---
+// Elements Mapping
 const scanLayer = document.getElementById('scan-layer');
 const authLayer = document.getElementById('auth-layer');
 const mobileBox = document.getElementById('mobile-box');
@@ -28,64 +19,51 @@ const uiSubtitle = document.getElementById('ui-subtitle');
 const userBadge = document.getElementById('user-badge');
 const maskedIdLabel = document.getElementById('masked-id');
 const btnAction = document.getElementById('btnAction');
-const mobileInput = document.getElementById('mobile');
 
-let detectedUserID = null;
+let detectedUserID = null; // Dito i-store kung recognized ang device
 let enteredPin = "";
 
-// --- 4. DEVICE RECOGNITION LOGIC ---
 async function checkDevice() {
-    console.log("Device Signature:", currentSig);
+    // START 3-SECOND TIMER (Para hindi ma-stuck sa loading)
+    const timerPromise = new Promise(res => setTimeout(() => res("timeout"), 3000));
+    
+    // START DATABASE SCAN
+    const scanPromise = (async () => {
+        try {
+            const q = query(collection(db, "users"), where("signatures", "array-contains", currentSig));
+            const snap = await getDocs(q);
+            return snap;
+        } catch (e) { return null; }
+    })();
 
-    // Safety Timeout: Kung 3 seconds walang sagot ang DB, ipakita ang manual login
-    const forceShow = setTimeout(() => {
-        if (authLayer.classList.contains('hidden')) {
-            showAuthUI(null);
-            uiSubtitle.innerText = "Connection slow. Please login manually.";
-        }
-    }, 3500);
+    // Alinman ang mauna: 3 seconds o ang Database Result
+    const result = await Promise.race([timerPromise, scanPromise]);
 
-    try {
-        const q = query(collection(db, "users"), where("signatures", "array-contains", currentSig));
-        const snap = await getDocs(q);
-
-        clearTimeout(forceShow);
-
-        if (!snap.empty) {
-            // Success: Nahanap ang device signature sa database
-            const userData = snap.docs[0].id;
-            showAuthUI(userData);
-        } else {
-            // New Device: Hindi nahanap ang signature
-            showAuthUI(null);
-        }
-    } catch (err) {
-        console.error("Firestore Error:", err);
-        showAuthUI(null); // Fallback to manual login
-    }
-}
-
-function showAuthUI(uid) {
+    // Transition UI
     scanLayer.classList.add('hidden');
     authLayer.classList.remove('hidden');
-    keypadSection.classList.remove('hidden');
 
-    if (uid) {
-        detectedUserID = uid;
-        localStorage.setItem('active_user', uid);
-        uiSubtitle.innerText = "Recognized Device";
+    if (result !== "timeout" && result && !result.empty) {
+        // --- CASE: DEVICE RECOGNIZED ---
+        detectedUserID = result.docs[0].id;
+        localStorage.setItem('active_user', detectedUserID);
+        
+        uiSubtitle.innerText = "Welcome Back!";
         userBadge.classList.remove('hidden');
-        mobileBox.classList.add('hidden');
-        // Masking: 09123456789 -> 09*******6789
-        maskedIdLabel.innerText = uid.replace(/(\d{2})(\d{5})(\d{4})/, "$1*******$3");
+        maskedIdLabel.innerText = detectedUserID.replace(/(\d{2})(\d{5})(\d{4})/, "$1*******$3");
+        
+        mobileBox.classList.add('hidden'); // Itago ang input box
+        keypadSection.classList.remove('hidden'); 
     } else {
-        uiSubtitle.innerText = "Register or Login to continue";
+        // --- CASE: NEW DEVICE / TIMEOUT ---
+        uiSubtitle.innerText = "Security Check: Unrecognized Device";
         mobileBox.classList.remove('hidden');
+        keypadSection.classList.remove('hidden');
         userBadge.classList.add('hidden');
     }
 }
 
-// --- 5. KEYPAD LOGIC ---
+// 2. KEYPAD LOGIC
 document.querySelectorAll('.key').forEach(key => {
     key.onclick = () => {
         if (enteredPin.length < 6) {
@@ -102,19 +80,13 @@ function updateDots() {
     });
 }
 
-function resetPin() {
-    enteredPin = "";
-    updateDots();
-    btnAction.classList.add('hidden');
-}
-
-// --- 6. AUTH ACTION (LOGIN/REGISTER) ---
+// 3. THE GATEKEEPER ACTION (Verify & Register)
 btnAction.onclick = async () => {
-    const manualUID = mobileInput.value.trim();
-    const finalUserID = detectedUserID || manualUID;
+    const mobileInput = document.getElementById('mobile').value.trim();
+    const finalUserID = detectedUserID || mobileInput;
 
     if (!finalUserID || finalUserID.length !== 11) {
-        alert("Enter 11-digit mobile number!");
+        alert("Please enter a valid 11-digit mobile number.");
         return;
     }
 
@@ -123,15 +95,15 @@ btnAction.onclick = async () => {
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-            // LOGIN / LINK DEVICE
+            // LOGIN / LINK DEVICE: I-verify ang Secret Key
             if (userSnap.data().secretKey === enteredPin) {
-                // Kung unrecognized device pero tama ang key, i-register ang signature
+                // Kung bagong device ito, i-save ang signature
                 if (!detectedUserID) {
                     await updateDoc(userRef, {
                         signatures: arrayUnion(currentSig)
                     });
                 }
-                loginSuccess(finalUserID);
+                successAuth(finalUserID);
             } else {
                 alert("Incorrect Secret Key!");
                 resetPin();
@@ -146,18 +118,23 @@ btnAction.onclick = async () => {
                 signatures: [currentSig],
                 Referral_status: "New"
             });
-            loginSuccess(finalUserID);
+            successAuth(finalUserID);
         }
     } catch (err) {
-        console.error("Auth Action Error:", err);
-        alert("Database connection failed.");
+        console.error(err);
+        alert("Connection Error. Please try again.");
     }
 };
 
-function loginSuccess(uid) {
+function resetPin() {
+    enteredPin = "";
+    updateDots();
+    btnAction.classList.add('hidden');
+}
+
+function successAuth(uid) {
     localStorage.setItem('active_user', uid);
     window.location.href = "main.html";
 }
 
-// Execute on load
 window.onload = checkDevice;
