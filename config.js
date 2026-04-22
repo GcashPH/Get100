@@ -1,10 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    setDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
     authDomain: "get100-8333e.firebaseapp.com",
-    databaseURL: "https://get100-8333e-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "get100-8333e",
     storageBucket: "get100-8333e.firebasestorage.app",
     messagingSenderId: "242341429618",
@@ -12,8 +16,9 @@ const firebaseConfig = {
     measurementId: "G-Y8TW2M3494"
 };
 
+// Initialize Firebase & Firestore
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const db = getFirestore(app);
 
 let step = 0; 
 let tempKey = "", confirmKey = "", mobileNum = "", dbKey = "";
@@ -26,18 +31,25 @@ window.onload = () => {
 
 async function checkDevice() {
     const signature = getSignature();
-    const dbRef = ref(db);
     
     try {
-        const sigSnap = await get(child(dbRef, `signatures/${signature}`));
+        // Firestore path: signatures/{signature}
+        const sigRef = doc(db, "signatures", signature);
+        const sigSnap = await getDoc(sigRef);
+        
         document.getElementById('scan-layer').classList.add('hidden');
         document.getElementById('auth-layer').classList.remove('hidden');
 
         if (sigSnap.exists()) {
-            mobileNum = sigSnap.val().owner;
-            const userSnap = await get(child(dbRef, `users/${mobileNum}`));
-            dbKey = userSnap.val().secretKey;
-            setupLoginUI();
+            mobileNum = sigSnap.data().owner;
+            // Firestore path: users/{mobileNum}
+            const userRef = doc(db, "users", mobileNum);
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                dbKey = userSnap.data().secretKey;
+                setupLoginUI();
+            }
         } else {
             setupRegisterUI();
         }
@@ -130,21 +142,24 @@ document.getElementById('mobile').oninput = (e) => {
 document.getElementById('btnAction').onclick = async () => {
     const sig = getSignature();
     try {
-        // Link signature inside User ID node
-        await set(ref(db, 'users/' + mobileNum), {
+        // Firestore SetDoc for User
+        await setDoc(doc(db, "users", mobileNum), {
             secretKey: tempKey,
             device_id: sig,
-            registeredAt: new Date().toISOString()
+            registeredAt: new Date().toISOString(),
+            earnings: 0, // Initial balance
+            referralCode: Math.random().toString(36).substring(2, 8).toUpperCase()
         });
 
-        // Add to global signature lookup
-        await set(ref(db, 'signatures/' + sig), {
+        // Firestore SetDoc for Signature
+        await setDoc(doc(db, "signatures", sig), {
             owner: mobileNum
         });
 
         localStorage.setItem('active_user', mobileNum);
         window.location.href = "main.html";
     } catch (e) {
+        console.error(e);
         alert("Registration Failed");
     }
 };
