@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
-    getFirestore, doc, getDoc, updateDoc, collection, 
-    onSnapshot, query, orderBy, limit 
+    getFirestore, doc, getDoc, updateDoc, collection, addDoc, 
+    onSnapshot, query, orderBy, limit, serverTimestamp, getDocs 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -17,231 +17,118 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const activeUser = localStorage.getItem('active_user');
 
-// --- DASHBOARD & BALANCE SYNC ---
-async function syncDashboard() {
-    if (!activeUser) return;
-    
-    // Kunin ang data base sa userID (Active User)
-    const userRef = doc(db, "users", activeUser);
-    onSnapshot(userRef, (snap) => {
-        if (snap.exists()) {
-            const data = snap.data();
-            const balance = data.earnings || 0;
-            document.getElementById('mainBalance').innerText = balance.toFixed(2);
-            
-            // Prefill sa Withdrawal Modal
-            const amountInput = document.getElementById('withdrawAmount');
-            if(amountInput) amountInput.value = balance.toFixed(2);
-        }
-    });
-}
-
-// Initialize Dashboard
-async function initDashboard() {
+// --- 1. INITIALIZATION & SYNC ---
+async function init() {
     if (!activeUser) { window.location.href = "index.html"; return; }
     document.getElementById('displayUserID').innerText = activeUser;
+    document.getElementById('gcashPrefix').value = activeUser;
 
-    // Real-time Sync for User Data
+    // Real-time Balance Sync
     onSnapshot(doc(db, "users", activeUser), (snap) => {
         if (snap.exists()) {
             const data = snap.data();
-            document.getElementById('mainBalance').innerText = (data.earnings || 0).toFixed(2);
-            if (data.Referral_status === "Redeem") {
-                document.getElementById('redeemSection').classList.add('hidden');
-            }
+            const bal = (data.earnings || 0).toFixed(2);
+            document.getElementById('mainBalance').innerText = bal;
+            document.getElementById('withdrawAmount').value = bal;
+            if (data.Referral_status === "Redeem") document.getElementById('redeemSection').classList.add('hidden');
         }
     });
 
-    // Load Promo Configs from Firestore
-    const contentSnap = await getDoc(doc(db, "app_data", "global_configs"));
-    if (contentSnap.exists()) {
-        const config = contentSnap.data();
-        document.getElementById('promoPhoto').src = config.share_photo || "https://via.placeholder.com/150";
-        document.getElementById('shortLink').innerText = config.short_link || "https://bit.ly/get100";
-        document.getElementById('shortLink').href = config.short_link || "#";
-    }
+    startLiveFeed();
+    updatePostButton();
 }
 
-// Modal Toggle Logic
-const modal = document.getElementById('inviteModal');
-document.getElementById('openInvite').onclick = () => modal.style.display = 'flex';
-document.getElementById('closeModal').onclick = () => {
-    modal.style.display = 'none';
-    document.getElementById('modalPage1').classList.remove('hidden');
-    document.getElementById('modalPage2').classList.add('hidden');
-};
+// --- 2. WITHDRAWAL LOGIC ---
+const wModal = document.getElementById('withdrawModal');
+document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
+document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
 
-// View Own Referral Code
-document.getElementById('viewMyCode').onclick = async () => {
-    const snap = await getDoc(doc(db, "users", activeUser));
-    alert("Your Referral Code: " + (snap.data().referralCode || "Generating..."));
-};
-
-// Next Page: Share Section
-document.getElementById('goSharePage').onclick = async () => {
-    const snap = await getDoc(doc(db, "users", activeUser));
-    const code = snap.data().referralCode;
-    document.getElementById('captionText').innerText = `Get ₱100 instantly! Register here and use my code. #Get100 #Referral_${code}`;
-    document.getElementById('modalPage1').classList.add('hidden');
-    document.getElementById('modalPage2').classList.remove('hidden');
-};
-
-// Back to Profile
-document.getElementById('backToP1').onclick = () => {
-    document.getElementById('modalPage2').classList.add('hidden');
-    document.getElementById('modalPage1').classList.remove('hidden');
-};
-
-// Verify Referral Code
-document.getElementById('btnVerify').onclick = async () => {
-    const codeInput = document.getElementById('inputFriendCode').value.trim().toUpperCase();
-    const userRef = doc(db, "users", activeUser);
-    const snap = await getDoc(userRef);
-    const myData = snap.data();
-
-    if (codeInput === myData.referralCode) {
-        alert("Bawal gamitin ang sariling code!");
-        return;
-    }
-
-    if (codeInput.length === 6) {
-        await updateDoc(userRef, {
-            Referral_status: "Redeem",
-            earnings: (myData.earnings || 0) + 100
-        });
-        alert("Verification Success! +₱100 Added.");
-    }
-};
-
-// Copy Caption
-document.getElementById('btnCopyCaption').onclick = () => {
-    const text = document.getElementById('captionText').innerText;
-    navigator.clipboard.writeText(text);
-    alert("Caption Copied!");
-};
-
-// Winner Simulation
-function spawnWinner() {
-    const id = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-    const div = document.createElement('div');
-    div.className = "msg winner";
-    div.innerHTML = `<img src="images/gc_icon.png" class="gc-icon"> User ${id} received ₱100.00 GCash!`;
-    const logs = document.getElementById('chatLogs');
-    if(logs) {
-        logs.appendChild(div);
-        logs.scrollTop = logs.scrollHeight;
-    }
-}
-
-// Start App
-window.onload = () => {
-    initDashboard();
-    setInterval(spawnWinner, 45000);
-    setTimeout(spawnWinner, 2000);
-};
-
-// --- WITHDRAWAL MATCHING LOGIC ---
 document.getElementById('gcashConfirm').oninput = function() {
-    const original = document.getElementById('gcashPrefix').value;
-    const confirm = this.value;
-    const claimBtn = document.getElementById('btnClaimGcash');
-    
-    if (original === confirm && confirm.length > 0) {
-        claimBtn.style.opacity = "1";
-        claimBtn.disabled = false;
+    const btn = document.getElementById('btnClaimGcash');
+    if (this.value === activeUser) {
+        btn.disabled = false; btn.style.opacity = "1";
     } else {
-        claimBtn.style.opacity = "0.5";
-        claimBtn.disabled = true;
+        btn.disabled = true; btn.style.opacity = "0.5";
     }
 };
 
-// --- CHAT POST & 10-MIN TIMER LOGIC ---
-const POST_COOLDOWN = 10 * 60 * 1000; // 10 Minutes in ms
-
-function updatePostButton() {
-    const lastPost = localStorage.getItem('last_post_time');
-    const btn = document.getElementById('btnPostRef');
-    const timerDisplay = document.getElementById('cooldownTimer');
-    
-    if (lastPost) {
-        const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
-        if (remaining > 0) {
-            btn.disabled = true;
-            timerDisplay.classList.remove('hidden');
-            startCountdown(remaining);
-            return;
-        }
-    }
-    btn.disabled = false;
-    timerDisplay.classList.add('hidden');
+// --- 3. LIVE FEED SEQUENCE (Winner 1m | Chat 3m) ---
+function addFeedItem(text, type, senderID = "") {
+    const logs = document.getElementById('chatLogs');
+    const div = document.createElement('div');
+    const isMe = senderID === activeUser;
+    div.className = `msg ${type === 'winner' ? 'winner' : ''} ${isMe ? 'my-chat' : ''}`;
+    div.innerHTML = text;
+    logs.prepend(div);
+    if (logs.childNodes.length > 10) logs.removeChild(logs.lastChild);
 }
 
-// --- SEQUENTIAL FEED LOGIC ---
-let feedInterval;
-async function startLiveFeed() {
-    const logsContainer = document.getElementById('chatLogs');
-    
-    // 1. Initial Load ng Chatlogs (Latest 5)
-    const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(5));
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach(doc => addFeedItem(doc.data().text, 'user'));
-
-    // 2. Sequence Logic
-    setInterval(() => {
-        // Tuwing 1 minute, mag-spawn ng Winner
-        spawnWinner();
-        
-        // Tuwing 3 minutes, kumuha ng bagong chat mula sa DB
-        setTimeout(() => {
-            fetchLatestChat();
-        }, 180000); // 3 mins
-    }, 60000); // Main loop is 1 min
+function spawnWinner() {
+    const randID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
+    addFeedItem(`<img src="images/gc_icon.png" class="gc-icon"> User ${randID} received ₱100.00 GCash!`, 'winner');
 }
 
 async function fetchLatestChat() {
     const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(1));
     const snap = await getDocs(q);
-    if (!snap.empty) {
-        addFeedItem(snap.docs[0].data().text, 'user');
-    }
+    snap.forEach(d => addFeedItem(d.data().text, 'user', d.data().sender));
 }
 
-function addFeedItem(text, type) {
-    const logs = document.getElementById('chatLogs');
-    const div = document.createElement('div');
-    div.className = `msg ${type === 'winner' ? 'winner' : ''}`;
-    div.innerHTML = text;
+function startLiveFeed() {
+    spawnWinner(); // Initial
+    setInterval(spawnWinner, 60000); // Every 1 min
+    setInterval(fetchLatestChat, 180000); // Every 3 mins
+}
+
+// --- 4. CHAT POST & COOLDOWN ---
+const POST_COOLDOWN = 10 * 60 * 1000; 
+
+function updatePostButton() {
+    const lastPost = localStorage.getItem('last_post_time');
+    const btn = document.getElementById('btnPostRef');
+    const timerBox = document.getElementById('cooldownTimer');
     
-    logs.prepend(div); // Newest at the top
-    if (logs.childNodes.length > 10) logs.removeChild(logs.lastChild);
+    if (lastPost) {
+        const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
+        if (remaining > 0) {
+            btn.disabled = true;
+            timerBox.classList.remove('hidden');
+            runCountdown(remaining);
+            return;
+        }
+    }
+    btn.disabled = false;
+    timerBox.classList.add('hidden');
 }
-// Update the Post function
+
+function runCountdown(ms) {
+    const span = document.getElementById('timer');
+    const int = setInterval(() => {
+        ms -= 1000;
+        if (ms <= 0) { clearInterval(int); updatePostButton(); }
+        else {
+            const m = Math.floor(ms/60000);
+            const s = Math.floor((ms%60000)/1000);
+            span.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+    }, 1000);
+}
+
 document.getElementById('btnPostRef').onclick = async () => {
-    const userSnap = await getDoc(doc(db, "users", activeUser));
-    const code = userSnap.data().referralCode;
+    const snap = await getDoc(doc(db, "users", activeUser));
+    const code = snap.data().referralCode;
     const last5 = activeUser.slice(-5);
+    const text = `User[${last5}]: Use code <b>${code}</b> #Get100`;
 
-    await addDoc(collection(db, "chatlogs"), {
-        text: `User[${last5}]: Use code <b>${code}</b> #Get100`,
-        sender: activeUser, // Used for POV color detection
-        timestamp: serverTimestamp()
-    });
-
+    await addDoc(collection(db, "chatlogs"), { text, sender: activeUser, timestamp: serverTimestamp() });
     localStorage.setItem('last_post_time', Date.now().toString());
     updatePostButton();
+    addFeedItem(text, 'user', activeUser);
 };
 
-// --- POV CHAT LOGIC ---
-// Sa loob ng iyong onSnapshot(chatQuery) listener, baguhin ang loop:
-snap.forEach(d => {
-    const msgData = d.data();
-    const div = document.createElement('div');
-    // Check if sender is current user to apply POV color
-    const isMe = msgData.sender === activeUser;
-    div.className = `msg ${isMe ? 'my-chat' : ''}`;
-    div.innerHTML = msgData.text;
-    document.getElementById('chatLogs').appendChild(div);
-});
+// --- 5. MODAL TOGGLES ---
+const iModal = document.getElementById('inviteModal');
+document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
+document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
 
-// Initial load check
-updatePostButton();
+window.onload = init;
