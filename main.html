@@ -6,7 +6,7 @@
     <title>Dashboard | SocialConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
 
@@ -14,6 +14,31 @@
     <div class="balance-card">
         <div class="balance-label">AVAILABLE BALANCE</div>
         <div class="balance-amount">₱<span id="mainBalance">0.00</span></div>
+
+        <button class="btn btn-withdraw" id="openWithdraw">WITHDRAWAL</button>
+
+<div class="chat-footer">
+    <button class="btn btn-post-neon" id="btnPostRef">POST MY REFERRAL CODE</button>
+    <div id="cooldownTimer" class="timer-text hidden">Ready in: <span id="timer">00:00</span></div>
+</div>
+
+<div class="modal" id="withdrawModal">
+    <div class="modal-content neon-border">
+        <span class="close-btn" id="closeWithdraw">×</span>
+        <h3 class="neon-text-blue">CASH OUT</h3>
+        <div class="withdraw-form">
+            <label>GCash Account Number</label>
+            <input type="text" id="gcashPrefix" class="withdraw-input" readonly>
+            
+            <label>Confirm Account Number</label>
+            <input type="text" id="gcashConfirm" class="withdraw-input" placeholder="Type it manually..." onpaste="return false;" oncopy="return false;">
+            
+            <button class="btn btn-neon-blue" id="btnClaimGcash">CLAIM THRU GCASH</button>
+        </div>
+    </div>
+</div>
+        
+        
         <button class="btn btn-invite" id="openInvite">INVITE & EARN</button>
     </div>
 
@@ -67,7 +92,7 @@
     </div>
 </div>
 
-<script type="module" src="app.js"></script>
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
