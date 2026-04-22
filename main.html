@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Dashboard | SocialConnect</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --bg-light: #f8fafc;
+            --card-white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        .user-info .welcome-msg {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .user-info h3 {
+            margin: 0;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        /* Earnings Card */
+        .earnings-card {
+            background: var(--card-white);
+            padding: 30px 25px;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .earnings-card::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: var(--primary);
+            opacity: 0.03;
+            border-radius: 50%;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .amount-display {
+            margin: 15px 0 30px;
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: baseline;
+        }
+
+        .currency {
+            font-size: 1.6rem;
+            margin-right: 8px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Buttons Section */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-invite {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-withdraw {
+            background: #f1f5f9;
+            color: var(--text-dark);
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Recent Activity */
+        .activity-section {
+            margin-top: 35px;
+        }
+
+        .activity-section h4 {
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            padding-left: 5px;
+        }
+
+        .activity-card {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 24px;
+            border: 2px dashed #cbd5e1;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            width: 100%;
+            margin-top: 40px;
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s;
+            padding-bottom: 30px;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.7;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="user-info">
+                <span class="welcome-msg">Account ID</span>
+                <h3 id="display-user">09** **** ****</h3>
+            </div>
+            <div class="status-badge">ONLINE</div>
+        </div>
+
+        <div class="earnings-card">
+            <div class="card-label">My Earnings</div>
+            <div class="amount-display">
+                <span class="currency">₱</span><span id="balance">0.00</span>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-invite" onclick="alert('Invite link copied!')">
+                    Invite
+                </button>
+                <button class="btn btn-withdraw" onclick="alert('Minimum withdrawal is ₱500.00')">
+                    Withdraw
+                </button>
+            </div>
+        </div>
+
+        <div class="activity-section">
+            <h4>History</h4>
+            <div class="activity-card">
+                <p>No recent activity found.<br>Invite friends to start earning!</p>
+            </div>
+        </div>
+
+        <button class="logout-btn" id="btnLogout">Secure Logout from Device</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
+            authDomain: "get100-8333e.firebaseapp.com",
+            databaseURL: "https://get100-8333e-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "get100-8333e",
+            storageBucket: "get100-8333e.firebasestorage.app",
+            messagingSenderId: "242341429618",
+            appId: "1:242341429618:web:c596b279f746dc22851deb",
+            measurementId: "G-Y8TW2M3494"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Security Check & Data Fetch
+        window.onload = async () => {
+            const user = localStorage.getItem('active_user');
+
+            if (!user) {
+                // Kick out if not logged in
+                window.location.href = "index.html";
+                return;
+            }
+
+            // Display Masked Mobile (09*****1234)
+            const masked = user.substring(0, 2) + "*****" + user.substring(7);
+            document.getElementById('display-user').innerText = masked;
+
+            // Fetch Earnings from Firebase
+            const dbRef = ref(db);
+            try {
+                const snapshot = await get(child(dbRef, `users/${user}`));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const earnings = data.earnings || 0;
+                    
+                    // Format number to Peso currency
+                    document.getElementById('balance').innerText = parseFloat(earnings).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching balance:", error);
+            }
+        };
+
+        // Logout logic
+        document.getElementById('btnLogout').onclick = () => {
+            if(confirm("Are you sure you want to logout?")) {
+                localStorage.removeItem('active_user');
+                window.location.href = "index.html";
+            }
+        };
+    </script>
+</body>
+</html>
