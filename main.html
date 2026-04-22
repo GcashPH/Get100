@@ -11,6 +11,9 @@
             --bg-light: #f1f5f9;
             --text-dark: #1e293b;
             --text-muted: #64748b;
+            --winner: #22c55e;
+            --bot: #3b82f6;
+            --user: #ef4444;
         }
 
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-light); display: flex; justify-content: center; min-height: 100vh; }
@@ -24,63 +27,47 @@
         .amount-display { font-size: 3rem; font-weight: 800; margin: 10px 0; color: var(--text-dark); }
         .peso-sign { font-size: 1.6rem; color: var(--primary); margin-right: 5px; }
 
-        /* --- CLASSIC CHAT THEME --- */
+        /* Classic Chat Section */
         .chat-section {
             background: white; border-radius: 24px; padding: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: 350px; display: flex; flex-direction: column;
         }
         .chat-logs { flex-grow: 1; overflow-y: auto; font-size: 0.8rem; padding: 5px; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
         
-        /* Message Styles */
-        .msg { margin-bottom: 8px; padding: 10px 14px; border-radius: 15px; background: #f8fafc; animation: fadeIn 0.3s; line-height: 1.4; }
-        .winner-msg { border-left: 4px solid #22c55e; background: #f0fdf4; font-weight: 600; color: #166534; }
-        .bot-msg { background: #eff6ff; color: #1e40af; border-left: 4px solid #3b82f6; }
-        .user-msg { background: #fff1f2; color: #9f1239; border-left: 4px solid #f43f5e; }
+        /* Bubble Messages */
+        .msg { margin-bottom: 8px; padding: 10px 14px; border-radius: 15px; background: #f8fafc; animation: fadeIn 0.3s; line-height: 1.4; font-size: 0.75rem; }
+        .winner-msg { border-left: 4px solid var(--winner); background: #f0fdf4; color: #166534; font-weight: 600; }
+        .bot-msg { border-left: 4px solid var(--bot); background: #eff6ff; color: #1e40af; }
+        .user-msg { border-left: 4px solid var(--user); background: #fff1f2; color: #9f1239; }
 
         .btn { padding: 16px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.3s; font-size: 0.9rem; }
         .btn-invite { background: var(--primary); color: white; }
-        .btn-post { background: #0f172a; color: white; margin-top: 5px; }
+        .btn-post { background: #0f172a; color: white; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Modal Styles */
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 28px; position: relative; text-align: center; }
-        .close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
     <div class="earnings-card">
-        <div style="text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">MY EARNINGS</div>
+        <div style="text-align: left; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">BALANCE AVAILABLE</div>
         <div class="amount-display"><span class="peso-sign">₱</span><span id="balance">0.00</span></div>
-        <button class="btn btn-invite" id="openInvite">Invite Friends</button>
+        <button class="btn btn-invite" id="btnInvite">Invite Partners</button>
     </div>
 
     <div class="chat-section">
-        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px;">LIVE ACTIVITY</div>
+        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px;">NETWORK ACTIVITY</div>
         <div class="chat-logs" id="chatLogs"></div>
-        <button class="btn btn-post" id="btnPostRef">POST REFERRAL CODE</button>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalInvite">
-    <div class="modal-content">
-        <span class="close-x" id="closeInvite">&times;</span>
-        <div id="step-invite">
-            <h3>Invite Partners</h3>
-            <div id="display-id" style="font-weight: 800; color: var(--primary); margin: 15px 0;"></div>
-            <button class="btn" style="background:#000; color:#fff;" id="btnVerify">Verify Referral</button>
-        </div>
+        <button class="btn btn-post" id="btnPostRef">POST MY REFERRAL CODE</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
-        getFirestore, doc, getDoc, updateDoc, collection, addDoc, 
-        query, where, getDocs, onSnapshot, orderBy, limit, serverTimestamp 
+        getFirestore, doc, getDoc, collection, addDoc, onSnapshot, 
+        query, orderBy, limit, serverTimestamp, where, getDocs 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -98,8 +85,8 @@
 
     const chatLogs = document.getElementById('chatLogs');
 
-    // UI Helper: Add Message to UI
-    function addMessage(text, type) {
+    // UI: Add Message Bubble
+    function appendMsg(text, type) {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
         div.innerHTML = text;
@@ -107,73 +94,75 @@
         chatLogs.scrollTop = chatLogs.scrollHeight;
     }
 
-    // 1. LISTEN TO LIVE CHAT (From Firestore)
-    const q = query(collection(db, "public_chats"), orderBy("timestamp", "asc"), limit(20));
-    onSnapshot(q, (snapshot) => {
-        chatLogs.innerHTML = ""; // Clear for refresh
-        snapshot.forEach((doc) => {
+    // 1. LIVE SYNC: Basahin ang Global Chat mula sa Firestore
+    const chatQuery = query(collection(db, "public_chats"), orderBy("timestamp", "asc"), limit(25));
+    onSnapshot(chatQuery, (snap) => {
+        chatLogs.innerHTML = ""; // Refresh logs
+        snap.forEach(doc => {
             const data = doc.data();
-            addMessage(data.text, data.type);
+            appendMsg(data.text, data.type);
         });
     });
 
-    // 2. BOT REFERRAL LOGIC (Fetch Active Codes)
-    async function triggerBotReferral() {
-        const qBot = query(collection(db, "bot_referrals"), where("status", "==", "active"), limit(1));
-        const snap = await getDocs(qBot);
-        if (!snap.empty) {
-            const botData = snap.docs[0].data();
-            addMessage(`<b>Bot_System</b>: Use this code to get ₱100: <b>${botData.code}</b>`, "bot-msg");
-        }
-    }
-
-    // 3. WINNER INTERVALS (Display Only - No DB Save)
-    function triggerWinner() {
-        const randomID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-        addMessage(`<b>Alert</b>: User ${randomID} received ₱100.00 via GCash!`, "winner-msg");
-    }
-
-    // 4. USER POST ACTION (Save to Firestore)
+    // 2. USER ACTION: Pag nag-click ng "Post Referral"
     document.getElementById('btnPostRef').onclick = async () => {
         const lastPost = localStorage.getItem('last_post_time');
         const now = Date.now();
 
-        if (lastPost && (now - lastPost < 86400000)) { // 24H check
-            alert("You can only post once every 24 hours.");
+        if (lastPost && (now - lastPost < 86400000)) {
+            alert("Bawal mag-repost! Isang beses lang bawat 24 oras.");
             return;
         }
 
-        const userSnap = await getDoc(doc(db, "users", currentUser));
-        const myCode = userSnap.data()?.referralCode || "N/A";
+        const userDoc = await getDoc(doc(db, "users", currentUser));
+        if (userDoc.exists()) {
+            const myCode = userDoc.data().referralCode;
+            
+            // I-save sa Firestore para makita ng LAHAT
+            await addDoc(collection(db, "public_chats"), {
+                text: `<b>User_${currentUser.slice(-4)}</b>: My code is <b>${myCode}</b>. Activate now for ₱100!`,
+                type: "user-msg",
+                timestamp: serverTimestamp()
+            });
+            
+            localStorage.setItem('last_post_time', now);
+        }
+    };
 
-        // Save to Firestore so everyone sees it
-        await addDoc(collection(db, "public_chats"), {
-            text: `<b>User_${currentUser.slice(-4)}</b>: My referral code is <b>${myCode}</b>. Use it now!`,
-            type: "user-msg",
-            timestamp: serverTimestamp()
+    // 3. BOT LOGIC: Kukuha ng code sa bot_referrals collection
+    async function botPost() {
+        const q = query(collection(db, "bot_referrals"), where("status", "==", "active"), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+            const botData = snap.docs[0].data();
+            appendMsg(`<b>Bot_System</b>: New available referral: <b>${botData.code}</b>`, "bot-msg");
+        }
+    }
+
+    // 4. WINNERS: Display only (para hindi magastos sa database)
+    function displayWinner() {
+        const randomID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
+        appendMsg(`<b>Payout</b>: User ${randomID} just received ₱100.00 GCash!`, "winner-msg");
+    }
+
+    // Initialize Page
+    window.onload = async () => {
+        if (!currentUser) { window.location.href = "index.html"; return; }
+
+        // Load Balance
+        onSnapshot(doc(db, "users", currentUser), (doc) => {
+            if (doc.exists()) {
+                document.getElementById('balance').innerText = (doc.data().earnings || 0).toFixed(2);
+            }
         });
 
-        localStorage.setItem('last_post_time', now);
-    };
-
-    // Initialize Intervals
-    window.onload = () => {
-        if (!currentUser) { window.location.href = "index.html"; return; }
-        document.getElementById('display-id').innerText = "ID: " + currentUser;
-
-        // Start Bots & Winners
-        setInterval(triggerWinner, 90000); // 1.5 mins
-        setInterval(triggerBotReferral, 300000); // 5 mins
+        // Intervals
+        setInterval(displayWinner, 120000); // 2 mins
+        setInterval(botPost, 300000); // 5 mins
         
-        // Initial Launch
-        setTimeout(triggerWinner, 2000);
-        setTimeout(triggerBotReferral, 5000);
+        // Instant Initial Load
+        setTimeout(displayWinner, 1000);
     };
-
-    // Modal Triggers
-    const modal = document.getElementById('modalInvite');
-    document.getElementById('openInvite').onclick = () => modal.style.display = 'flex';
-    document.getElementById('closeInvite').onclick = () => modal.style.display = 'none';
 
 </script>
 
