@@ -6,7 +6,7 @@
     <title>Dashboard | SocialConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
 
@@ -16,36 +16,13 @@
         <div class="balance-amount">₱<span id="mainBalance">0.00</span></div>
 
         <button class="btn btn-withdraw" id="openWithdraw">WITHDRAWAL</button>
-        <div class="modal-content neon-border">
-    <span class="close-btn" id="closeWithdraw">×</span>
-    <h3 class="neon-text-blue">CASH OUT</h3>
-    
-    <div class="withdraw-form" style="text-align: left;">
-        <label style="font-size: 0.7rem; color: #94a3b8;">Amount to Withdraw</label>
-        <input type="text" id="withdrawAmount" class="withdraw-input" readonly 
-               style="background: rgba(255,255,255,0.05); color: #fff; margin-bottom: 15px;">
-
-        <label style="font-size: 0.7rem; color: #94a3b8;">GCash Number</label>
-        <input type="text" id="gcashPrefix" class="withdraw-input" readonly>
-        
-        <div style="position: relative; margin-top: 15px;">
-            <label style="font-size: 0.7rem; color: #94a3b8;">Confirm GCash Number</label>
-            <input type="text" id="gcashConfirm" class="withdraw-input" placeholder="Retype number...">
-            </div>
-        
-        <button class="btn btn-neon-blue" id="btnClaimGcash" disabled style="opacity: 0.5;">
-            CLAIM THRU GCASH
-        </button>
-    </div>
-</div>
         <button class="btn btn-invite" id="openInvite">INVITE & EARN</button>
     </div>
 
     <div class="chat-box">
         <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 15px;">LIVE NETWORK FEED</div>
         
-        <div class="chat-logs" id="chatLogs">
-            </div>
+        <div class="chat-logs" id="chatLogs"></div>
 
         <div class="chat-footer">
             <button class="btn btn-post-neon" id="btnPostRef">POST MY REFERRAL CODE</button>
@@ -58,14 +35,18 @@
     <div class="modal-content neon-border">
         <span class="close-btn" id="closeWithdraw">×</span>
         <h3 class="neon-text-blue">CASH OUT</h3>
+        
         <div class="withdraw-form">
-            <label>GCash Account Number</label>
+            <label style="font-size: 0.7rem; color: #94a3b8;">Amount to Withdraw</label>
+            <input type="text" id="withdrawAmount" class="withdraw-input" readonly>
+
+            <label style="font-size: 0.7rem; color: #94a3b8;">GCash Account Number</label>
             <input type="text" id="gcashPrefix" class="withdraw-input" readonly>
             
-            <label>Confirm Account Number</label>
-            <input type="text" id="gcashConfirm" class="withdraw-input" placeholder="Type it manually..." onpaste="return false;" oncopy="return false;">
+            <label style="font-size: 0.7rem; color: #94a3b8;">Confirm Account Number</label>
+            <input type="text" id="gcashConfirm" class="withdraw-input" placeholder="Type manually..." onpaste="return false;">
             
-            <button class="btn btn-neon-blue" id="btnClaimGcash">CLAIM THRU GCASH</button>
+            <button class="btn btn-neon-blue" id="btnClaimGcash" disabled style="opacity: 0.5;">CLAIM THRU GCASH</button>
         </div>
     </div>
 </div>
@@ -80,41 +61,29 @@
                 <span class="user-id-text" id="displayUserID">09000000000</span>
                 <button class="view-icon-btn" id="viewMyCode"><i class="fa-solid fa-eye"></i></button>
             </div>
-
             <hr class="divider">
-
             <div id="redeemSection" class="redeem-section">
-                <p style="font-size: 0.7rem; font-weight: 800; text-align: center; margin-bottom: 10px;">ENTER REFERRAL CODE</p>
+                <p style="font-size: 0.7rem; font-weight: 800; text-align: center;">ENTER REFERRAL CODE</p>
                 <input type="text" id="inputFriendCode" class="redeem-input" placeholder="6-CHAR CODE">
-                <button class="btn btn-verify" id="btnVerify">VERIFY CODE</button>
+                <button class="btn btn-verify" id="btnVerify" style="background:#000; color:#fff;">VERIFY CODE</button>
             </div>
-
             <button class="btn btn-fb" id="goSharePage">SHARE ON FACEBOOK</button>
         </div>
 
         <div id="modalPage2" class="hidden">
             <h3 style="margin: 0;">Post to Social Media</h3>
             <div class="share-grid">
-                <div class="photo-box">
-                    <img id="promoPhoto" src="" alt="Promo">
-                </div>
+                <div class="photo-box"><img id="promoPhoto" src="" alt="Promo"></div>
                 <div class="caption-box">
-                    <div id="captionText">Loading caption...</div>
+                    <div id="captionText">Loading...</div>
                     <button class="copy-btn" id="btnCopyCaption"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             </div>
-
-            <div class="shortlink-box">
-                <strong>Short Link:</strong><br>
-                <a id="shortLink" href="#" target="_blank">loading...</a>
-            </div>
-
-            <button class="btn" id="backToP1" style="background:none; color:#64748b; font-size:0.8rem; margin-top:15px;">← Back to Profile</button>
+            <button class="btn" id="backToP1" style="background:none; color:#64748b; font-size:0.8rem; margin-top:15px;">← Back</button>
         </div>
     </div>
 </div>
 
 <script type="module" src="js/app.js"></script>
-
 </body>
 </html>
