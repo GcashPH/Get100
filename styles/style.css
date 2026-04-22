@@ -12,8 +12,9 @@
 body {
     margin: 0;
     font-family: 'Inter', sans-serif;
+    /* 4D Anime Sky, Greenery, and Sea Background */
     background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), 
-                url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=80');
+                url('https://images.alphacoders.com/838/838137.jpg'); 
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
@@ -70,8 +71,6 @@ body {
 .btn-post:hover:not(:disabled) { background: var(--sage); color: white; }
 .btn-post:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-fb { background: #1877F2; color: white; margin-top: 15px; width: 100%; }
-
 /* CHAT FEED */
 .feed-header { font-size: 0.75rem; font-weight: 800; color: var(--sage); margin-bottom: 15px; }
 
@@ -79,7 +78,7 @@ body {
     height: 300px;
     overflow-y: auto;
     display: flex;
-    flex-direction: column-reverse; /* Newest at bottom for chat feel */
+    flex-direction: column-reverse; 
     gap: 10px;
     padding: 10px;
     background: rgba(255,255,255,0.3);
