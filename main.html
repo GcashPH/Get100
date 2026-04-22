@@ -4,166 +4,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | SocialConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4f46e5;
-            --bg-light: #f1f5f9;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --winner: #22c55e;
-            --bot: #3b82f6;
-            --user: #ef4444;
-        }
-
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-light); display: flex; justify-content: center; min-height: 100vh; }
-        .dashboard-container { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
-        
-        /* Earnings Card */
-        .earnings-card { 
-            background: white; padding: 25px; border-radius: 32px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px;
-        }
-        .amount-display { font-size: 3rem; font-weight: 800; margin: 10px 0; color: var(--text-dark); }
-        .peso-sign { font-size: 1.6rem; color: var(--primary); margin-right: 5px; }
-
-        /* Classic Chat Section */
-        .chat-section {
-            background: white; border-radius: 24px; padding: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05); height: 350px; display: flex; flex-direction: column;
-        }
-        .chat-logs { flex-grow: 1; overflow-y: auto; font-size: 0.8rem; padding: 5px; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
-        
-        /* Bubble Messages */
-        .msg { margin-bottom: 8px; padding: 10px 14px; border-radius: 15px; background: #f8fafc; animation: fadeIn 0.3s; line-height: 1.4; font-size: 0.75rem; }
-        .winner-msg { border-left: 4px solid var(--winner); background: #f0fdf4; color: #166534; font-weight: 600; }
-        .bot-msg { border-left: 4px solid var(--bot); background: #eff6ff; color: #1e40af; }
-        .user-msg { border-left: 4px solid var(--user); background: #fff1f2; color: #9f1239; }
-
-        .btn { padding: 16px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.3s; font-size: 0.9rem; }
-        .btn-invite { background: var(--primary); color: white; }
-        .btn-post { background: #0f172a; color: white; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        :root { --primary: #4f46e5; --bg: #f8fafc; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 420px; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
+        .balance { font-size: 2.5rem; font-weight: 800; color: #1e293b; margin: 10px 0; }
+        .chat-box { background: white; border-radius: 20px; height: 350px; display: flex; flex-direction: column; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .logs { flex-grow: 1; overflow-y: auto; font-size: 0.8rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
+        .msg { margin-bottom: 8px; padding: 10px; border-radius: 12px; background: #f1f5f9; text-align: left; line-height: 1.4; }
+        .winner { border-left: 4px solid #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
+        .bot { border-left: 4px solid #3b82f6; background: #eff6ff; color: #1e40af; }
+        .user { border-left: 4px solid #ef4444; background: #fff1f2; color: #9f1239; }
+        .btn { padding: 15px; border: none; border-radius: 15px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-invite { background: var(--primary); color: white; margin-bottom: 10px; }
+        .btn-post { background: #1e293b; color: white; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="dashboard-container">
-    <div class="earnings-card">
-        <div style="text-align: left; font-size: 0.7rem; font-weight: 800; color: var(--text-muted);">BALANCE AVAILABLE</div>
-        <div class="amount-display"><span class="peso-sign">₱</span><span id="balance">0.00</span></div>
-        <button class="btn btn-invite" id="btnInvite">Invite Partners</button>
+<div class="container">
+    <div class="card">
+        <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-align: left;">TOTAL BALANCE</div>
+        <div class="balance">₱<span id="balance">0.00</span></div>
+        <button class="btn btn-invite">Invite Friends</button>
     </div>
 
-    <div class="chat-section">
-        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 8px;">NETWORK ACTIVITY</div>
-        <div class="chat-logs" id="chatLogs"></div>
-        <button class="btn btn-post" id="btnPostRef">POST MY REFERRAL CODE</button>
+    <div class="chat-box">
+        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 10px;">GLOBAL ACTIVITY</div>
+        <div class="logs" id="chatLogs"></div>
+        <button class="btn btn-post" id="btnPost">POST MY REFERRAL</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-        getFirestore, doc, getDoc, collection, addDoc, onSnapshot, 
-        query, orderBy, limit, serverTimestamp, where, getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-        authDomain: "get100-8333e.firebaseapp.com",
-        projectId: "get100-8333e",
-        storageBucket: "get100-8333e.firebasestorage.app",
-        messagingSenderId: "242341429618",
-        appId: "1:242341429618:web:c596b279f746dc22851deb"
+      apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
+      authDomain: "get100-8333e.firebaseapp.com",
+      projectId: "get100-8333e",
+      storageBucket: "get100-8333e.firebasestorage.app",
+      messagingSenderId: "242341429618",
+      appId: "1:242341429618:web:c596b279f746dc22851deb"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const currentUser = localStorage.getItem('active_user');
+    const user = localStorage.getItem('active_user');
 
-    const chatLogs = document.getElementById('chatLogs');
-
-    // UI: Add Message Bubble
-    function appendMsg(text, type) {
+    function addLog(html, type) {
         const div = document.createElement('div');
         div.className = `msg ${type}`;
-        div.innerHTML = text;
-        chatLogs.appendChild(div);
-        chatLogs.scrollTop = chatLogs.scrollHeight;
+        div.innerHTML = html;
+        const logs = document.getElementById('chatLogs');
+        logs.appendChild(div);
+        logs.scrollTop = logs.scrollHeight;
     }
 
-    // 1. LIVE SYNC: Basahin ang Global Chat mula sa Firestore
-    const chatQuery = query(collection(db, "public_chats"), orderBy("timestamp", "asc"), limit(25));
-    onSnapshot(chatQuery, (snap) => {
-        chatLogs.innerHTML = ""; // Refresh logs
-        snap.forEach(doc => {
-            const data = doc.data();
-            appendMsg(data.text, data.type);
-        });
+    // 1. LIVE CHAT SYNC
+    onSnapshot(query(collection(db, "public_chats"), orderBy("timestamp", "asc"), limit(20)), (snap) => {
+        document.getElementById('chatLogs').innerHTML = "";
+        snap.forEach(d => addLog(d.data().text, d.data().type));
     });
 
-    // 2. USER ACTION: Pag nag-click ng "Post Referral"
-    document.getElementById('btnPostRef').onclick = async () => {
-        const lastPost = localStorage.getItem('last_post_time');
-        const now = Date.now();
+    // 2. SYNC BALANCE
+    onSnapshot(doc(db, "users", user), (d) => {
+        if(d.exists()) document.getElementById('balance').innerText = d.data().earnings.toFixed(2);
+    });
 
-        if (lastPost && (now - lastPost < 86400000)) {
-            alert("Bawal mag-repost! Isang beses lang bawat 24 oras.");
-            return;
-        }
-
-        const userDoc = await getDoc(doc(db, "users", currentUser));
-        if (userDoc.exists()) {
-            const myCode = userDoc.data().referralCode;
-            
-            // I-save sa Firestore para makita ng LAHAT
+    // 3. POST REFERRAL
+    document.getElementById('btnPost').onclick = async () => {
+        const snap = await getDoc(doc(db, "users", user));
+        if(snap.exists()) {
             await addDoc(collection(db, "public_chats"), {
-                text: `<b>User_${currentUser.slice(-4)}</b>: My code is <b>${myCode}</b>. Activate now for ₱100!`,
-                type: "user-msg",
+                text: `<b>User_${user.slice(-4)}</b>: Use code <b>${snap.data().referralCode}</b> to get ₱100!`,
+                type: "user",
                 timestamp: serverTimestamp()
             });
-            
-            localStorage.setItem('last_post_time', now);
         }
     };
 
-    // 3. BOT LOGIC: Kukuha ng code sa bot_referrals collection
-    async function botPost() {
-        const q = query(collection(db, "bot_referrals"), where("status", "==", "active"), limit(1));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-            const botData = snap.docs[0].data();
-            appendMsg(`<b>Bot_System</b>: New available referral: <b>${botData.code}</b>`, "bot-msg");
-        }
-    }
-
-    // 4. WINNERS: Display only (para hindi magastos sa database)
-    function displayWinner() {
-        const randomID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-        appendMsg(`<b>Payout</b>: User ${randomID} just received ₱100.00 GCash!`, "winner-msg");
-    }
-
-    // Initialize Page
-    window.onload = async () => {
-        if (!currentUser) { window.location.href = "index.html"; return; }
-
-        // Load Balance
-        onSnapshot(doc(db, "users", currentUser), (doc) => {
-            if (doc.exists()) {
-                document.getElementById('balance').innerText = (doc.data().earnings || 0).toFixed(2);
-            }
-        });
-
-        // Intervals
-        setInterval(displayWinner, 120000); // 2 mins
-        setInterval(botPost, 300000); // 5 mins
-        
-        // Instant Initial Load
-        setTimeout(displayWinner, 1000);
-    };
-
+    // 4. WINNER SIMULATION (Visual Only)
+    setInterval(() => {
+        const id = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
+        addLog(`<b>Alert</b>: User ${id} received ₱100.00 GCash!`, "winner");
+    }, 150000);
 </script>
 
 </body>
