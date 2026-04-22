@@ -1,120 +1,189 @@
 :root {
-    --primary: #00f2ff; 
-    --accent: #6366f1;
-    --bg: #020617;
-    --card: rgba(15, 23, 42, 0.9);
+    --sunrise-gold: #ffb142; 
+    --nature-green: #2ed573;
+    --text-light: #ffffff;
+    --text-dark: #2f3542;
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    margin: 0; padding: 0;
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    background-image: radial-gradient(circle at 50% 20%, #1e293b 0%, #020617 80%);
-    color: #f8fafc;
-    display: flex; justify-content: center; align-items: center;
-    height: 100vh; width: 100vw;
+    font-family: 'Nunito', sans-serif;
+    /* Anime Drone View Sunrise Background */
+    background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat fixed;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    height: 100vh; 
+    width: 100vw;
     overflow: hidden;
 }
 
-.container {
-    width: 90%; 
-    max-width: 360px;
-    padding: 30px 20px; /* Dagdag padding para sa breathing room */
-    border-radius: 28px;
-    background: var(--card);
-    border: 1px solid rgba(0, 242, 255, 0.2);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-    text-align: center;
-    box-sizing: border-box; /* Fix para sa border-overlap */
+/* Warm Overlay to enhance the Anime Sunrise feel */
+body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 177, 66, 0.2) 0%, rgba(46, 213, 115, 0.2) 100%);
+    z-index: -1;
 }
 
-/* Scanning Animation */
+/* GLASS CONTAINER */
+.glass-container {
+    width: 90%; 
+    max-width: 380px;
+    padding: 40px 25px;
+    border-radius: 35px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    text-align: center;
+    animation: floatIn 0.8s ease-out forwards;
+}
+
+@keyframes floatIn {
+    0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* TYPOGRAPHY */
+.title-text {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--text-light);
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    text-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+}
+
+.sub-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 20px;
+}
+
+/* SCANNING ANIMATION */
 .scanner-circle {
-    width: 100px; height: 100px;
-    border: 2px solid var(--primary);
-    border-radius: 50%; margin: 0 auto 20px;
-    position: relative; overflow: hidden;
-    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+    width: 110px; height: 110px;
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%; 
+    margin: 0 auto 25px;
+    position: relative; 
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 25px rgba(255, 177, 66, 0.4);
+}
+
+.fingerprint-icon {
+    font-size: 3rem;
+    color: var(--sunrise-gold);
+    opacity: 0.8;
 }
 
 .scan-line {
-    width: 100%; height: 3px;
-    background: var(--primary);
+    width: 100%; height: 4px;
+    background: var(--nature-green);
     position: absolute;
-    box-shadow: 0 0 10px var(--primary);
-    animation: scan 2s ease-in-out infinite;
+    box-shadow: 0 0 15px var(--nature-green);
+    animation: scan 1.8s ease-in-out infinite;
 }
 
 @keyframes scan {
-    0%, 100% { top: 10%; }
-    50% { top: 90%; }
+    0% { top: -10%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { top: 110%; opacity: 0; }
 }
 
-/* User ID Display (Masked) */
-.user-badge {
-    margin-bottom: 20px;
-    animation: fadeIn 0.5s ease;
+/* USER BADGE */
+.user-badge { margin-bottom: 25px; animation: fadeIn 0.5s ease; }
+
+.avatar-icon {
+    font-size: 2rem;
+    color: var(--nature-green);
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .masked-id {
-    font-size: 1.3rem; font-weight: 800;
-    letter-spacing: 2px; color: var(--primary);
-    padding: 12px; background: rgba(0, 242, 255, 0.1);
-    border-radius: 14px; border: 1px dashed var(--primary);
-    display: inline-block; width: 100%; box-sizing: border-box;
+    font-size: 1.4rem; font-weight: 900;
+    letter-spacing: 2px; color: var(--text-dark);
+    padding: 12px 20px; 
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 20px; 
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* Inputs */
-.input-group {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 0 5px; /* Side gap */
-    box-sizing: border-box;
-}
-
+/* INPUT FIELD */
+.input-group { margin-bottom: 20px; }
 input {
     width: 100%; 
-    padding: 16px; 
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid #334155; 
-    border-radius: 15px;
-    color: white; text-align: center; font-size: 1.1rem;
-    box-sizing: border-box; 
+    padding: 18px; 
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid transparent; 
+    border-radius: 18px;
+    color: var(--text-dark); 
+    text-align: center; 
+    font-size: 1.1rem;
+    font-weight: 800;
     outline: none; transition: 0.3s;
 }
+input::placeholder { color: #a4b0be; font-weight: 600; }
+input:focus { background: #fff; border-color: var(--sunrise-gold); box-shadow: 0 0 15px rgba(255, 177, 66, 0.3); }
 
-input:focus { border-color: var(--primary); }
+.error { font-size: 0.75rem; color: #ff4757; font-weight: 800; margin-top: 8px; background: rgba(255, 255, 255, 0.9); padding: 5px; border-radius: 5px; display: inline-block; }
 
-/* Keypad */
+/* 6-DIGIT KEYPAD */
+.pin-label { font-size: 0.75rem; font-weight: 800; color: #fff; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+
+.dot-container { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, 0.4); transition: 0.3s; border: 1px solid rgba(255,255,255,0.6); }
+.dot.active { background: var(--sunrise-gold); border-color: var(--sunrise-gold); box-shadow: 0 0 10px var(--sunrise-gold); transform: scale(1.2); }
+
 .keypad-container {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 12px; margin: 20px auto; width: fit-content;
+    gap: 15px; margin: 0 auto 25px; width: fit-content;
 }
 
 .key {
-    width: 58px; height: 58px;
-    border-radius: 50%; background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(0, 242, 255, 0.2);
-    color: white; font-size: 1.2rem; font-weight: 600;
+    width: 65px; height: 65px;
+    border-radius: 50%; 
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: white; font-size: 1.4rem; font-weight: 800;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: 0.2s;
+    cursor: pointer; transition: 0.15s;
+    backdrop-filter: blur(5px);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
 }
 
 .key:active {
-    background: var(--primary); color: #000;
+    background: var(--sunrise-gold); color: #fff;
     transform: scale(0.9);
+    border-color: transparent;
 }
 
 .key.zero { grid-column: 2; }
 
-.dot-container { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; }
-.dot { width: 12px; height: 12px; border-radius: 50%; background: #1e293b; }
-.dot.active { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
-
-button {
-    width: 100%; padding: 16px; border: none; border-radius: 15px;
-    background: var(--primary); color: #020617; font-weight: 800;
+/* ACTION BUTTON */
+.btn-submit {
+    width: 100%; padding: 18px; border: none; border-radius: 18px;
+    background: var(--nature-green); color: white; font-weight: 900;
     font-size: 1rem; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 10px 20px rgba(46, 213, 115, 0.3);
 }
+.btn-submit:active { transform: translateY(2px); box-shadow: 0 5px 10px rgba(46, 213, 115, 0.3); }
 
-.hidden { display: none; }
+/* UTILITIES */
+.hidden { display: none !important; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
