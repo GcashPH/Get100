@@ -120,3 +120,80 @@ window.onload = () => {
     setInterval(spawnWinner, 45000);
     setTimeout(spawnWinner, 2000);
 };
+
+// --- WITHDRAWAL LOGIC ---
+const withdrawModal = document.getElementById('withdrawModal');
+document.getElementById('openWithdraw').onclick = () => {
+    document.getElementById('gcashPrefix').value = activeUser; // Pre-filled from storage
+    withdrawModal.style.display = 'flex';
+};
+document.getElementById('closeWithdraw').onclick = () => withdrawModal.style.display = 'none';
+
+// --- CHAT POST & 10-MIN TIMER LOGIC ---
+const POST_COOLDOWN = 10 * 60 * 1000; // 10 Minutes in ms
+
+function updatePostButton() {
+    const lastPost = localStorage.getItem('last_post_time');
+    const btn = document.getElementById('btnPostRef');
+    const timerDisplay = document.getElementById('cooldownTimer');
+    
+    if (lastPost) {
+        const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
+        if (remaining > 0) {
+            btn.disabled = true;
+            timerDisplay.classList.remove('hidden');
+            startCountdown(remaining);
+            return;
+        }
+    }
+    btn.disabled = false;
+    timerDisplay.classList.add('hidden');
+}
+
+function startCountdown(duration) {
+    const timerSpan = document.getElementById('timer');
+    const interval = setInterval(() => {
+        const remaining = duration - 1000;
+        duration = remaining;
+        
+        if (remaining <= 0) {
+            clearInterval(interval);
+            updatePostButton();
+        } else {
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            timerSpan.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+    }, 1000);
+}
+
+// Update the Post function
+document.getElementById('btnPostRef').onclick = async () => {
+    const userSnap = await getDoc(doc(db, "users", activeUser));
+    const code = userSnap.data().referralCode;
+    const last5 = activeUser.slice(-5);
+
+    await addDoc(collection(db, "chatlogs"), {
+        text: `User[${last5}]: Use code <b>${code}</b> #Get100`,
+        sender: activeUser, // Used for POV color detection
+        timestamp: serverTimestamp()
+    });
+
+    localStorage.setItem('last_post_time', Date.now().toString());
+    updatePostButton();
+};
+
+// --- POV CHAT LOGIC ---
+// Sa loob ng iyong onSnapshot(chatQuery) listener, baguhin ang loop:
+snap.forEach(d => {
+    const msgData = d.data();
+    const div = document.createElement('div');
+    // Check if sender is current user to apply POV color
+    const isMe = msgData.sender === activeUser;
+    div.className = `msg ${isMe ? 'my-chat' : ''}`;
+    div.innerHTML = msgData.text;
+    document.getElementById('chatLogs').appendChild(div);
+});
+
+// Initial load check
+updatePostButton();
