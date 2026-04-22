@@ -3,229 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Connect | Secure Register</title>
+    <title>SocialConnect | Secure Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --bg: #0f172a;
-            --card: rgba(255, 255, 255, 0.08);
-            --text: #f8fafc;
-        }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-            color: var(--text);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 90%; max-width: 380px;
-            background: var(--card);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.5rem; border-radius: 28px;
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        h2 { font-weight: 800; margin-bottom: 5px; }
-        .sub-text { color: #94a3b8; font-size: 0.8rem; margin-bottom: 20px; }
-
-        /* Input Styling */
-        input {
-            width: 100%; padding: 14px; margin-bottom: 15px;
-            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.2); color: white;
-            box-sizing: border-box; text-align: center; font-size: 1rem;
-        }
-
-        /* Keypad Styling */
-        .keypad-container {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 12px; max-width: 220px; margin: 0 auto 20px;
-        }
-
-        .key {
-            width: 60px; height: 60px;
-            border-radius: 50%; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white; font-size: 1.2rem; font-weight: 600;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.2s;
-            user-select: none;
-        }
-
-        .key:active {
-            background: var(--primary);
-            transform: scale(0.9);
-            box-shadow: 0 0 15px var(--primary);
-        }
-
-        .key.zero { grid-column: 2; }
-
-        .dot-container {
-            display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;
-        }
-
-        .dot {
-            width: 12px; height: 12px; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .dot.active { background: var(--primary); box-shadow: 0 0 8px var(--primary); }
-
-        button#btnRegister {
-            width: 100%; padding: 15px; border: none; border-radius: 15px;
-            background: var(--primary); color: white; font-weight: 700;
-            cursor: pointer; box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .hidden { display: none; }
-        .error { color: #f87171; font-size: 0.75rem; margin-top: -10px; margin-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-    <div id="setup-ui">
-        <h2 id="title">Register</h2>
-        <p class="sub-text" id="instruction">Enter your 11-digit mobile number</p>
-        
-        <input type="tel" id="mobile" placeholder="09xxxxxxxxx" maxlength="11">
-        <div id="mobile-err" class="error hidden">Must be 11 digits starting with 09</div>
+    <div id="scan-layer">
+        <div class="scanner-circle">
+            <div class="scan-line"></div>
+        </div>
+        <h2 class="glitch">RECOGNIZING DEVICE</h2>
+        <p class="sub-text">Analyzing hardware signatures...</p>
+    </div>
+
+    <div id="auth-layer" class="hidden">
+        <h2 id="ui-title">SocialConnect</h2>
+        <p id="ui-subtitle" class="sub-text"></p>
+
+        <div id="user-badge" class="hidden">
+            <div class="avatar-icon">👤</div>
+            <div id="masked-id" class="masked-id">09** **** 1234</div>
+        </div>
+
+        <div id="mobile-box">
+            <input type="tel" id="mobile" placeholder="09xxxxxxxxx" maxlength="11">
+            <div id="mobile-err" class="error hidden">Starts with 09 (11 digits)</div>
+        </div>
 
         <div id="keypad-section" class="hidden">
-            <div class="dot-container" id="dot-viewer">
+            <div class="dot-container">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
             </div>
 
             <div class="keypad-container">
-                <div class="key" onclick="pressKey(1)">1</div>
-                <div class="key" onclick="pressKey(2)">2</div>
-                <div class="key" onclick="pressKey(3)">3</div>
-                <div class="key" onclick="pressKey(4)">4</div>
-                <div class="key" onclick="pressKey(5)">5</div>
-                <div class="key" onclick="pressKey(6)">6</div>
-                <div class="key" onclick="pressKey(7)">7</div>
-                <div class="key" onclick="pressKey(8)">8</div>
-                <div class="key" onclick="pressKey(9)">9</div>
-                <div class="key zero" onclick="pressKey(0)">0</div>
+                <div class="key" data-val="1">1</div>
+                <div class="key" data-val="2">2</div>
+                <div class="key" data-val="3">3</div>
+                <div class="key" data-val="4">4</div>
+                <div class="key" data-val="5">5</div>
+                <div class="key" data-val="6">6</div>
+                <div class="key" data-val="7">7</div>
+                <div class="key" data-val="8">8</div>
+                <div class="key" data-val="9">9</div>
+                <div class="key zero" data-val="0">0</div>
             </div>
-            <button id="btnRegister" class="hidden">Complete Registration</button>
+            
+            <button id="btnAction" class="hidden">PROCEED</button>
         </div>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-        authDomain: "get100-8333e.firebaseapp.com",
-        databaseURL: "https://get100-8333e-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "get100-8333e",
-        storageBucket: "get100-8333e.firebasestorage.app",
-        messagingSenderId: "242341429618",
-        appId: "1:242341429618:web:c596b279f746dc22851deb",
-        measurementId: "G-Y8TW2M3494"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    let step = 1; // 1: Mobile, 2: Secret Key, 3: Confirm
-    let secretKey = "";
-    let confirmKey = "";
-    let mobileNum = "";
-
-    const mobileInput = document.getElementById('mobile');
-    const keypadSection = document.getElementById('keypad-section');
-    const instruction = document.getElementById('instruction');
-    const dots = document.querySelectorAll('.dot');
-
-    // Monitor Mobile Input
-    mobileInput.addEventListener('input', (e) => {
-        let val = e.target.value;
-        if (val.length === 11) {
-            if (val.startsWith("09")) {
-                document.getElementById('mobile-err').classList.add('hidden');
-                mobileNum = val;
-                startKeypad("Set 6-Digit Secret Key");
-            } else {
-                document.getElementById('mobile-err').classList.remove('hidden');
-            }
-        }
-    });
-
-    function startKeypad(text) {
-        mobileInput.classList.add('hidden');
-        keypadSection.classList.remove('hidden');
-        instruction.innerText = text;
-        resetDots();
-    }
-
-    window.pressKey = (num) => {
-        if (step === 2 && secretKey.length < 6) {
-            secretKey += num;
-            updateDots(secretKey.length);
-            if (secretKey.length === 6) {
-                setTimeout(() => {
-                    step = 3;
-                    instruction.innerText = "Confirm Secret Key";
-                    resetDots();
-                }, 300);
-            }
-        } else if (step === 3 && confirmKey.length < 6) {
-            confirmKey += num;
-            updateDots(confirmKey.length);
-            if (confirmKey.length === 6) {
-                if (secretKey === confirmKey) {
-                    document.getElementById('btnRegister').classList.remove('hidden');
-                    instruction.innerText = "Match! Click register below.";
-                } else {
-                    alert("Keys do not match! Restarting...");
-                    secretKey = ""; confirmKey = ""; step = 2;
-                    startKeypad("Set 6-Digit Secret Key");
-                }
-            }
-        }
-    };
-
-    function updateDots(len) {
-        dots.forEach((dot, index) => {
-            if (index < len) dot.classList.add('active');
-            else dot.classList.remove('active');
-        });
-    }
-
-    function resetDots() {
-        dots.forEach(dot => dot.classList.remove('active'));
-    }
-
-    document.getElementById('btnRegister').onclick = async () => {
-        try {
-            const signature = btoa(navigator.userAgent + screen.width);
-            await set(ref(db, 'users/' + mobileNum), {
-                mobile: mobileNum,
-                key: secretKey,
-                deviceSignature: signature,
-                timestamp: new Date().toISOString()
-            });
-            alert("Registered Successfully!");
-            location.reload();
-        } catch (e) {
-            alert("Error: " + e.message);
-        }
-    };
-
-    // Initialize step
-    step = 2; 
-</script>
-
+<script type="module" src="config.js"></script>
 </body>
 </html>
