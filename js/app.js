@@ -105,7 +105,7 @@ function addFeedItem(text, type, senderID = "") {
 }
 
 function spawnWinner() {
-    const randID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
+    const randID = "09" + Math.floor(Math.random()*90+10) + "***" + Math.floor(1000+Math.random()*9000);
     addFeedItem(`<i class="fa-solid fa-gift"></i> User ${randID} claimed ₱100.00 GCash!`, 'winner');
 }
 
@@ -172,7 +172,7 @@ let myActiveReferralCode = "GET100";
 // Idagdag mo ito sa loob ng snapshot handler mo:
 /*
     myActiveReferralCode = data.referralCode || "NEW123";
-    document.getElementById('displayMyCode').innerText = myActiveReferralCode;
+    document.getElementById('displayreferralCode').innerText = myActiveReferralCode;
     // Auto-generate caption
     document.getElementById('promoCaption').value = `Earn 100 GCash Credits my Inviting Friends, Walang babayaran FREE! gamitin ang aking Referral Code: ${myActiveReferralCode}`;
 */
@@ -201,8 +201,8 @@ function copyToClipboard(textToCopy, iconElement) {
 }
 
 // 1. Copy Own Referral Code
-document.getElementById('copyMyCode').onclick = function() {
-    copyToClipboard(document.getElementById('displayMyCode').innerText, this);
+document.getElementById('copyreferralCode').onclick = function() {
+    copyToClipboard(document.getElementById('displayreferralCode').innerText, this);
 };
 
 // 2. Copy Caption
