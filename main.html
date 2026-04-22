@@ -10,70 +10,64 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; }
         .dashboard { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; }
         
-        /* Earnings Card */
-        .card { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; border: 1px solid #fff; }
-        .amount { font-size: 2.8rem; font-weight: 800; margin: 10px 0; letter-spacing: -1px; }
+        .card { background: white; padding: 25px; border-radius: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); text-align: center; margin-bottom: 15px; }
+        .amount { font-size: 2.8rem; font-weight: 800; margin: 10px 0; }
         
-        /* Chat Box */
-        .chat-box { background: white; border-radius: 25px; padding: 15px; height: 380px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .chat-box { background: white; border-radius: 25px; padding: 15px; height: 350px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .chat-logs { flex-grow: 1; overflow-y: auto; font-size: 0.8rem; padding: 10px; border-bottom: 1px solid #f1f5f9; }
         
-        /* Message Bubbles */
-        .msg { margin-bottom: 10px; padding: 12px; border-radius: 18px; background: #f8fafc; animation: slideIn 0.3s ease; position: relative; line-height: 1.4; }
-        .winner { border-left: 4px solid #22c55e; background: #f0fdf4; color: #166534; display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .bot { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+        .msg { margin-bottom: 10px; padding: 12px; border-radius: 18px; background: #f8fafc; animation: slideIn 0.3s ease; }
+        .winner { border-left: 4px solid #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
         .mine { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
-        
-        .gc-icon { width: 18px; height: 18px; object-fit: contain; }
 
-        /* Buttons */
         .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.2s; font-size: 0.9rem; }
-        .btn-main { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-main { background: var(--primary); color: white; }
         .btn-post { background: #1e293b; color: white; }
+        .btn-fb { background: #1877F2; color: white; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        /* Modal / Pop-up */
+        /* Pop-up Adjustments */
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 85%; padding: 30px; border-radius: 35px; position: relative; text-align: center; animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-content { background: white; width: 85%; max-width: 340px; padding: 25px; border-radius: 30px; position: relative; text-align: center; }
         
+        .hidden { display: none !important; }
+
         @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes popUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
     <div class="card">
-        <div style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-align: left; margin-bottom: 5px;">WALLET BALANCE</div>
+        <div style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-align: left;">WALLET BALANCE</div>
         <div class="amount">₱<span id="balanceDisplay">0.00</span></div>
         <button class="btn btn-main" id="openInvite">Invite Friends</button>
     </div>
 
     <div class="chat-box">
-        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 10px; display: flex; justify-content: space-between;">
-            <span>LIVE NETWORK UPDATES</span>
-            <span id="userBadge" style="color: var(--primary);">ID: ....</span>
-        </div>
-        <div class="chat-logs" id="chatLogs">
-            </div>
-        <button class="btn btn-post" id="btnPostRef">POST MY REFERRAL CODE</button>
+        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 10px;">COMMUNITY UPDATES</div>
+        <div class="chat-logs" id="chatLogs"></div>
+        <button class="btn btn-post" id="btnPostRef">POST REFERRAL CODE</button>
     </div>
 </div>
 
 <div class="modal" id="modalInvite">
     <div class="modal-content">
-        <span id="closeInvite" style="position:absolute; top:20px; right:25px; cursor:pointer; font-size: 1.2rem; color: #94a3b8;">✕</span>
-        <h3 style="margin-top: 0; font-weight: 800;">Invite & Earn</h3>
-        <p style="font-size: 0.8rem; color: #64748b;">Share your code to get ₱100.00</p>
+        <span id="closeInvite" style="position:absolute; top:15px; right:20px; cursor:pointer;">✕</span>
         
-        <div style="background:#f8fafc; padding:15px; border-radius:20px; border: 1px solid #e2e8f0; margin: 20px 0;">
-            <div id="myReferralCode" style="font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: 2px;">LOADING...</div>
-            <div style="font-size: 0.6rem; font-weight: 600; color: #94a3b8; margin-top: 5px;">YOUR UNIQUE CODE</div>
+        <div id="step-mycode">
+            <h3 style="margin-bottom:5px;">Your Code</h3>
+            <div id="myReferralCode" style="font-size: 1.8rem; font-weight: 800; color: var(--primary); margin: 15px 0;">......</div>
+            <button class="btn btn-fb" id="btnShareFB">Share to Facebook</button>
+            <button class="btn" id="btnNextPage" style="background:#e2e8f0; color:#475569;">Next Page ➔</button>
         </div>
 
-        <div style="background:#fffbeb; padding:20px; border-radius:25px; border:1px dashed #facc15;">
-            <p style="font-size:0.7rem; font-weight:800; margin-bottom: 10px;">REDEEM A CODE</p>
-            <input type="text" id="friendCode" placeholder="Enter Friend's Code" style="width:100%; padding:15px; border-radius:15px; border:1px solid #e2e8f0; text-align:center; font-weight: 700; box-sizing: border-box;">
-            <button class="btn" id="btnVerify" style="background:black; color:white;">Claim ₱100.00 Reward</button>
+        <div id="step-redeem" class="hidden">
+            <h3 style="margin-bottom:15px;">Redeem Code</h3>
+            <div style="background:#fffbeb; padding:15px; border-radius:20px; border:1px dashed #facc15;">
+                <input type="text" id="friendCode" placeholder="Enter Friend's Code" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ddd; text-align:center; font-weight:700; box-sizing:border-box;">
+                <button class="btn" id="btnVerify" style="background:black; color:white;">Claim ₱100.00</button>
+            </div>
+            <button class="btn" id="btnBackPage" style="background:none; color:#64748b; font-size:0.8rem;">← Back</button>
         </div>
     </div>
 </div>
@@ -81,7 +75,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
-        getFirestore, doc, getDoc, setDoc, addDoc, collection, 
+        getFirestore, doc, getDoc, updateDoc, setDoc, addDoc, collection, 
         onSnapshot, query, orderBy, limit, serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -96,95 +90,114 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const activeUser = localStorage.getItem('active_user'); // Galing sa index.html
 
-    // Local Signature Helper
-    const getSignature = () => btoa(navigator.userAgent + screen.width + screen.height);
-    const activeUser = localStorage.getItem('active_user');
+    const generate6CharRef = () => Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    // UI Elements
-    const chatLogs = document.getElementById('chatLogs');
-    const balanceDisplay = document.getElementById('balanceDisplay');
-    const modal = document.getElementById('modalInvite');
+    // 1. GENERATE / FETCH OWN CODE
+    async function handleInviteClick() {
+        const userRef = doc(db, "users", activeUser);
+        const snap = await getDoc(userRef);
+        let data = snap.data();
 
-    // 1. SECURITY & AUTH CHECK
-    async function initAuth() {
-        const signature = getSignature();
-        if (!activeUser) { window.location.href = "index.html"; return; }
+        // Kung wala pang referral code, gawa at i-save sa DB
+        if (!data.referralCode) {
+            const newCode = generate6CharRef();
+            await updateDoc(userRef, { referralCode: newCode });
+            document.getElementById('myReferralCode').innerText = newCode;
+        } else {
+            document.getElementById('myReferralCode').innerText = data.referralCode;
+        }
 
-        const sigRef = doc(db, "signatures", signature);
-        const sigSnap = await getDoc(sigRef);
+        // Check kung naka-redeem na para itago ang Next Page/Redeem section
+        if (data.RedeemCode === "YES") {
+            document.getElementById('btnNextPage').classList.add('hidden');
+        } else {
+            document.getElementById('btnNextPage').classList.remove('hidden');
+        }
 
-        if (!sigSnap.exists() || sigSnap.data().owner !== activeUser) {
-            alert("Security Error: Device mismatch. Please login again.");
-            localStorage.clear();
-            window.location.href = "index.html";
+        document.getElementById('modalInvite').style.display = 'flex';
+    }
+
+    // 2. REDEEM LOGIC
+    document.getElementById('btnVerify').onclick = async () => {
+        const inputCode = document.getElementById('friendCode').value.trim().toUpperCase();
+        const userRef = doc(db, "users", activeUser);
+        const snap = await getDoc(userRef);
+        const myData = snap.data();
+
+        // Logic: Bawal ang sariling code
+        if (inputCode === myData.referralCode) {
+            alert("Error: You cannot use your own referral code!");
             return;
         }
+
+        if (inputCode.length === 6) {
+            // Update Database: RedeemCode = "YES" at dagdag balance
+            await updateDoc(userRef, { 
+                RedeemCode: "YES",
+                earnings: (myData.earnings || 0) + 100 
+            });
+            alert("Success! ₱100.00 added to your balance.");
+            location.reload(); // Para mag-update ang UI
+        } else {
+            alert("Invalid Code.");
+        }
+    };
+
+    // 3. UI NAVIGATION
+    document.getElementById('openInvite').onclick = handleInviteClick;
+    document.getElementById('closeInvite').onclick = () => {
+        document.getElementById('modalInvite').style.display = 'none';
+        document.getElementById('step-mycode').classList.remove('hidden');
+        document.getElementById('step-redeem').classList.add('hidden');
+    };
+
+    document.getElementById('btnNextPage').onclick = () => {
+        document.getElementById('step-mycode').classList.add('hidden');
+        document.getElementById('step-redeem').classList.remove('hidden');
+    };
+
+    document.getElementById('btnBackPage').onclick = () => {
+        document.getElementById('step-mycode').classList.remove('hidden');
+        document.getElementById('step-redeem').classList.add('hidden');
+    };
+
+    document.getElementById('btnShareFB').onclick = () => {
+        const code = document.getElementById('myReferralCode').innerText;
+        const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=Use my referral code ${code} to get ₱100!`;
+        window.open(url, '_blank');
+    };
+
+    // 4. SYNC DATA
+    window.onload = () => {
+        if(!activeUser) window.location.href = "index.html";
+        onSnapshot(doc(db, "users", activeUser), (doc) => {
+            if(doc.exists()) document.getElementById('balanceDisplay').innerText = (doc.data().earnings || 0).toFixed(2);
+        });
         
-        document.getElementById('userBadge').innerText = "ID: " + activeUser.substring(0,4) + "***";
-        loadUserData();
-    }
-
-    // 2. LOAD USER DATA & REAL-TIME BALANCE
-    async function loadUserData() {
-        onSnapshot(doc(db, "users", activeUser), (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.data();
-                balanceDisplay.innerText = (data.earnings || 0).toFixed(2);
-                document.getElementById('myReferralCode').innerText = data.referralCode || "N/A";
-            }
+        // Chat listener
+        onSnapshot(query(collection(db, "chatlogs"), orderBy("timestamp", "asc"), limit(20)), (snap) => {
+            document.getElementById('chatLogs').innerHTML = "";
+            snap.forEach(d => {
+                const msgData = d.data();
+                const div = document.createElement('div');
+                div.className = `msg ${msgData.sender === activeUser ? 'mine' : ''}`;
+                div.innerHTML = msgData.text;
+                document.getElementById('chatLogs').appendChild(div);
+            });
         });
-    }
+    };
 
-    // 3. CHATLOGS: REAL-TIME SYNC (Public Chats Only)
-    const chatQuery = query(collection(db, "chatlogs"), orderBy("timestamp", "asc"), limit(30));
-    onSnapshot(chatQuery, (snap) => {
-        chatLogs.innerHTML = ""; // Clear current logs
-        snap.forEach(doc => {
-            const data = doc.data();
-            const type = data.sender === activeUser ? 'mine' : 'bot';
-            appendChat(data.text, type);
-        });
-    });
-
-    function appendChat(html, type) {
-        const div = document.createElement('div');
-        div.className = `msg ${type}`;
-        div.innerHTML = html;
-        chatLogs.appendChild(div);
-        chatLogs.scrollTop = chatLogs.scrollHeight;
-    }
-
-    // 4. DISPLAY ONLY: WINNERS (Not saved to DB)
-    function showWinner() {
-        const randomID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-        const html = `<img src="images/gc_icon.png" class="gc-icon"> User ${randomID} earned ₱100.00 GCash!`;
-        appendChat(html, 'winner');
-    }
-
-    // 5. BUTTON ACTIONS
     document.getElementById('btnPostRef').onclick = async () => {
-        const userSnap = await getDoc(doc(db, "users", activeUser));
-        const myCode = userSnap.data().referralCode;
-
+        const snap = await getDoc(doc(db, "users", activeUser));
+        const code = snap.data().referralCode || "NONE";
         await addDoc(collection(db, "chatlogs"), {
-            text: `User ${activeUser.slice(-4)}: My referral code is <b>${myCode}</b>`,
+            text: `User ${activeUser.slice(-4)}: Use my code <b>${code}</b>`,
             sender: activeUser,
             timestamp: serverTimestamp()
         });
     };
-
-    // Modal Triggers
-    document.getElementById('openInvite').onclick = () => modal.style.display = 'flex';
-    document.getElementById('closeInvite').onclick = () => modal.style.display = 'none';
-
-    // Start Simulation
-    window.onload = () => {
-        initAuth();
-        setInterval(showWinner, 120000); // Winner every 2 mins
-        setTimeout(showWinner, 3000); // Initial winner
-    };
-
 </script>
 
 </body>
