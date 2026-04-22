@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// Firebase Config (Keep your credentials)
 const firebaseConfig = {
   apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
   authDomain: "get100-8333e.firebaseapp.com",
@@ -15,39 +16,59 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Global Variables
-let step = 0; // 1: Register Mobile, 2: Set Key, 3: Confirm Key, 4: Login Mode
+let step = 0; 
 let tempKey = "", confirmKey = "", mobileNum = "", dbKey = "";
-
 const getSignature = () => btoa(navigator.userAgent + screen.width);
 
 window.onload = () => {
-    setTimeout(checkDevice, 2500); // Effect scanning delay
+    setTimeout(checkDevice, 2500); 
 };
 
+// --- LOGIC: CHECK IF SIGNATURE IS LINKED TO ANY USER ---
 async function checkDevice() {
     const signature = getSignature();
     const dbRef = ref(db);
     
     try {
-        const snap = await get(child(dbRef, `signatures/${signature}`));
+        // Titingnan natin sa 'signatures' node kung kaninong mobile itong signature na ito
+        const sigSnap = await get(child(dbRef, `signatures/${signature}`));
+        
         document.getElementById('scan-layer').classList.add('hidden');
         document.getElementById('auth-layer').classList.remove('hidden');
 
-        if (snap.exists()) {
-            // RECOGNIZED
-            mobileNum = snap.val().mobile;
+        if (sigSnap.exists()) {
+            mobileNum = sigSnap.val().owner; // Kunin ang mobile number owner
             const userSnap = await get(child(dbRef, `users/${mobileNum}`));
             dbKey = userSnap.val().secretKey;
-            
             setupLoginUI();
         } else {
-            // NOT RECOGNIZED
             setupRegisterUI();
         }
-    } catch (e) { alert("Network Error"); }
+    } catch (e) { console.error(e); }
 }
 
+// --- LOGIC: REGISTRATION SAVE ---
+document.getElementById('btnAction').onclick = async () => {
+    const sig = getSignature();
+    try {
+        // 1. I-save ang Main User Data at i-nest ang signature sa loob ng user node
+        await set(ref(db, 'users/' + mobileNum), {
+            secretKey: tempKey,
+            lastUsed: new Date().toISOString(),
+            device_id: sig // Pinaka-importanteng link
+        });
+
+        // 2. I-save sa lookup table para mabilis ang scanning sa load
+        await set(ref(db, 'signatures/' + sig), {
+            owner: mobileNum
+        });
+
+        localStorage.setItem('active_user', mobileNum);
+        window.location.href = "main.html";
+    } catch (e) {
+        alert("Registration Failed: " + e.message);
+    }
+};
 function setupLoginUI() {
     step = 4;
     document.getElementById('ui-title').innerText = "Security Login";
