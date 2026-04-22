@@ -1,135 +1,119 @@
 :root {
-    --sage: #7fb069;
-    --leaf: #4a6d3a;
-    --sky-blue: #70a1ff;
-    --glass-white: rgba(255, 255, 255, 0.2); /* Ultra Transparent */
-    --popup-bg: rgba(255, 255, 255, 0.95);
-    --fancy-font: 'Pacifico', cursive;
+    --primary: #4facfe;
+    --success: #00b894;
+    --warning: #ff7675;
+    --text-dark: #2d3436;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.4);
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Nunito', sans-serif; }
 
 body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    /* POV Anime Background: Trees and Sea */
-    background: url('https://images8.alphacoders.com/926/926492.jpg'); 
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center bottom;
+    /* Drone view of beach - highly saturated to look like anime */
+    background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=80') center/cover fixed;
+    height: 100vh;
     display: flex;
     justify-content: center;
-    min-height: 100vh;
+    overflow: hidden; /* Prevents full page scrolling, app-like feel */
 }
 
-/* TRANSPARENT DASHBOARD */
-.glass-card {
-    background: var(--glass-white);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+/* Pseudo-element for anime filter overlay */
+body::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(79, 172, 254, 0.3) 0%, rgba(0, 242, 254, 0.1) 100%);
+    z-index: -1;
 }
 
-.label { font-size: 0.75rem; font-weight: 800; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); text-align: center; }
-.amount { font-size: 3.5rem; font-weight: 900; color: #fff; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-
-/* REMASTERED POPUPS */
-.anime-popup {
-    background: var(--popup-bg);
-    border-radius: 40px;
-    padding: 35px;
-    border: 5px solid var(--sage);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-}
-
-.fancy-title {
-    font-family: var(--fancy-font);
-    color: var(--leaf);
-    font-size: 2.2rem;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.anime-label {
-    font-weight: 800;
-    font-size: 0.7rem;
-    color: var(--leaf);
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 5px;
-}
-
-/* REMASTERED INPUTS */
-.remastered-input {
+/* MOBILE CONTAINER */
+.mobile-container {
     width: 100%;
-    padding: 15px;
-    border-radius: 15px;
-    border: 2px solid #e0e0e0;
-    font-size: 1rem;
-    font-weight: 700;
-    background: #fff;
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.remastered-input.readonly {
-    background: #f8f9fa;
-    color: #a0a0a0;
-}
-
-/* INVITE FRIENDS CENTERED ID */
-.user-id-box {
-    text-align: center;
-    background: rgba(127, 176, 105, 0.1);
+    max-width: 480px; /* Limits width on tablets/PC to keep POV */
+    height: 100vh;
     padding: 20px;
-    border-radius: 20px;
-    margin-bottom: 20px;
+    overflow-y: auto;
+    padding-bottom: 40px;
 }
 
-.id-text {
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--sage);
-    margin: 0;
-    letter-spacing: 1px;
+/* GLASS PANELS */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
-/* PREFILL CHANGE ICON */
-.prefill-group { position: relative; }
-.change-btn {
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    font-size: 1.3rem;
-    color: #ff7675;
-    cursor: pointer;
-}
+.text-center { text-align: center; }
+.panel-subtitle { font-size: 0.8rem; font-weight: 900; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); letter-spacing: 1px; }
+.balance-display { font-size: 3.2rem; font-weight: 900; color: #fff; text-shadow: 2px 2px 5px rgba(0,0,0,0.3); margin: 5px 0 15px; }
 
 /* BUTTONS */
-.btn {
-    border: none;
-    border-radius: 18px;
-    font-weight: 800;
-    cursor: pointer;
-    padding: 15px;
-    width: 100%;
-    transition: 0.3s;
-}
+.button-row { display: flex; gap: 10px; }
+.btn { border: none; border-radius: 14px; font-weight: 800; padding: 14px; width: 100%; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+.btn-action { background: rgba(255,255,255,0.8); color: var(--text-dark); }
+.btn-action:active { transform: scale(0.96); }
 
-.btn-primary { background: var(--sage); color: white; margin-bottom: 10px; }
-.btn-claim { background: var(--sky-blue); color: white; margin-top: 10px; }
-.btn-claim:disabled { background: #ccc; opacity: 0.5; }
+.btn-post { background: var(--primary); color: white; border: 2px solid rgba(255,255,255,0.5); }
+.btn-post:disabled { background: rgba(0,0,0,0.3); color: #aaa; border-color: transparent; }
 
-/* CHAT FEED */
-.chat-logs {
-    height: 250px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 20px;
-    margin-bottom: 10px;
+.btn-submit { background: var(--success); color: white; font-size: 1rem; }
+.btn-submit:disabled { background: #dfe6e9; color: #b2bec3; }
+
+/* FEED SECTION */
+.panel-header { font-size: 0.8rem; font-weight: 900; color: #fff; margin-bottom: 15px; text-shadow: 1px 1px 3px rgba(0,0,0,0.4); }
+.chat-area {
+    height: 280px;
+    display: flex;
+    flex-direction: column-reverse; /* Important: Auto bottom scroll */
+    gap: 8px;
     overflow-y: auto;
-    padding: 10px;
+    padding-right: 5px;
+    margin-bottom: 15px;
 }
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.5); border-radius: 4px; }
+
+.msg { padding: 12px 16px; border-radius: 18px; font-size: 0.85rem; font-weight: 700; max-width: 85%; word-wrap: break-word; animation: slideIn 0.3s ease; }
+.user-msg { background: rgba(255,255,255,0.9); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+.my-msg { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.winner-msg { align-self: center; background: #ffeaa7; color: #d35400; text-align: center; width: 90%; }
+
+.timer-text { font-size: 0.8rem; font-weight: 800; color: #ffeaa7; text-align: center; margin-top: 8px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+.hidden { display: none !important; }
+.mt-10 { margin-top: 10px; }
+
+/* MODALS */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+    display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+}
+.modal-card {
+    background: #fff; width: 100%; max-width: 400px; border-radius: 28px; padding: 30px; position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.btn-close { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; }
+.modal-title { text-align: center; font-size: 1.8rem; font-weight: 900; color: var(--text-dark); margin-bottom: 25px; }
+
+/* INPUTS */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-size: 0.75rem; font-weight: 800; color: #636e72; margin-bottom: 5px; text-transform: uppercase; }
+.input-box { width: 100%; padding: 16px; border: 2px solid #ecf0f1; border-radius: 14px; font-size: 1rem; font-weight: 700; color: var(--text-dark); background: #fff; outline: none; transition: 0.2s; }
+.input-box:focus { border-color: var(--primary); }
+.input-box.locked { background: #f5f6fa; color: #a4b0be; }
+
+/* X ICON WRAPPER */
+.input-with-icon { position: relative; display: flex; align-items: center; }
+.icon-btn { position: absolute; right: 15px; font-size: 1.4rem; color: var(--warning); cursor: pointer; transition: 0.2s; }
+
+/* USER ID DESIGN */
+.user-id-wrapper { background: rgba(0,184,148,0.1); padding: 20px; border-radius: 16px; text-align: center; margin-bottom: 20px; }
+.user-id-wrapper p { font-size: 0.7rem; font-weight: 800; color: var(--success); }
+.user-id-wrapper h1 { font-size: 2rem; color: var(--text-dark); margin-top: 5px; letter-spacing: 1px; }
+
+@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
