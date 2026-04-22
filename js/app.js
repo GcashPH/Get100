@@ -17,6 +17,25 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const activeUser = localStorage.getItem('active_user');
 
+// --- DASHBOARD & BALANCE SYNC ---
+async function syncDashboard() {
+    if (!activeUser) return;
+    
+    // Kunin ang data base sa userID (Active User)
+    const userRef = doc(db, "users", activeUser);
+    onSnapshot(userRef, (snap) => {
+        if (snap.exists()) {
+            const data = snap.data();
+            const balance = data.earnings || 0;
+            document.getElementById('mainBalance').innerText = balance.toFixed(2);
+            
+            // Prefill sa Withdrawal Modal
+            const amountInput = document.getElementById('withdrawAmount');
+            if(amountInput) amountInput.value = balance.toFixed(2);
+        }
+    });
+}
+
 // Initialize Dashboard
 async function initDashboard() {
     if (!activeUser) { window.location.href = "index.html"; return; }
@@ -121,13 +140,20 @@ window.onload = () => {
     setTimeout(spawnWinner, 2000);
 };
 
-// --- WITHDRAWAL LOGIC ---
-const withdrawModal = document.getElementById('withdrawModal');
-document.getElementById('openWithdraw').onclick = () => {
-    document.getElementById('gcashPrefix').value = activeUser; // Pre-filled from storage
-    withdrawModal.style.display = 'flex';
+// --- WITHDRAWAL MATCHING LOGIC ---
+document.getElementById('gcashConfirm').oninput = function() {
+    const original = document.getElementById('gcashPrefix').value;
+    const confirm = this.value;
+    const claimBtn = document.getElementById('btnClaimGcash');
+    
+    if (original === confirm && confirm.length > 0) {
+        claimBtn.style.opacity = "1";
+        claimBtn.disabled = false;
+    } else {
+        claimBtn.style.opacity = "0.5";
+        claimBtn.disabled = true;
+    }
 };
-document.getElementById('closeWithdraw').onclick = () => withdrawModal.style.display = 'none';
 
 // --- CHAT POST & 10-MIN TIMER LOGIC ---
 const POST_COOLDOWN = 10 * 60 * 1000; // 10 Minutes in ms
@@ -150,23 +176,45 @@ function updatePostButton() {
     timerDisplay.classList.add('hidden');
 }
 
-function startCountdown(duration) {
-    const timerSpan = document.getElementById('timer');
-    const interval = setInterval(() => {
-        const remaining = duration - 1000;
-        duration = remaining;
+// --- SEQUENTIAL FEED LOGIC ---
+let feedInterval;
+async function startLiveFeed() {
+    const logsContainer = document.getElementById('chatLogs');
+    
+    // 1. Initial Load ng Chatlogs (Latest 5)
+    const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(5));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(doc => addFeedItem(doc.data().text, 'user'));
+
+    // 2. Sequence Logic
+    setInterval(() => {
+        // Tuwing 1 minute, mag-spawn ng Winner
+        spawnWinner();
         
-        if (remaining <= 0) {
-            clearInterval(interval);
-            updatePostButton();
-        } else {
-            const mins = Math.floor(remaining / 60000);
-            const secs = Math.floor((remaining % 60000) / 1000);
-            timerSpan.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-    }, 1000);
+        // Tuwing 3 minutes, kumuha ng bagong chat mula sa DB
+        setTimeout(() => {
+            fetchLatestChat();
+        }, 180000); // 3 mins
+    }, 60000); // Main loop is 1 min
 }
 
+async function fetchLatestChat() {
+    const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+        addFeedItem(snap.docs[0].data().text, 'user');
+    }
+}
+
+function addFeedItem(text, type) {
+    const logs = document.getElementById('chatLogs');
+    const div = document.createElement('div');
+    div.className = `msg ${type === 'winner' ? 'winner' : ''}`;
+    div.innerHTML = text;
+    
+    logs.prepend(div); // Newest at the top
+    if (logs.childNodes.length > 10) logs.removeChild(logs.lastChild);
+}
 // Update the Post function
 document.getElementById('btnPostRef').onclick = async () => {
     const userSnap = await getDoc(doc(db, "users", activeUser));
