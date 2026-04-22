@@ -163,3 +163,8 @@ body::before {
 }
 
 textarea.input-box { resize: none; padding: 12px; }
+
+/* Sa styles/style.css */
+body {
+    display: none; /* Itago muna ang dashboard habang nag-ve-verify */
+}
