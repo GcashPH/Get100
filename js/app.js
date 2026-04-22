@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
-    getFirestore, doc, getDoc, updateDoc, collection, addDoc, 
-    onSnapshot, query, orderBy, limit, serverTimestamp, getDocs 
+    getFirestore, doc, getDoc, collection, addDoc, 
+    onSnapshot, query, orderBy, limit, serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -17,9 +17,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const activeUser = localStorage.getItem('active_user');
 
-const POST_COOLDOWN = 10 * 60 * 1000; // 10 Minutes
+const POST_COOLDOWN = 10 * 60 * 1000; // 10 mins
 
-// --- 1. INITIALIZATION ---
 async function init() {
     if (!activeUser) { window.location.href = "index.html"; return; }
     
@@ -27,7 +26,7 @@ async function init() {
     document.getElementById('displayUserID').innerText = activeUser;
     document.getElementById('gcashPrefix').value = activeUser;
 
-    // Real-time Balance & Profile Sync
+    // 1. REAL-TIME BALANCE
     onSnapshot(doc(db, "users", activeUser), (snap) => {
         if (snap.exists()) {
             const data = snap.data();
@@ -35,8 +34,8 @@ async function init() {
             document.getElementById('mainBalance').innerText = bal;
             document.getElementById('withdrawAmount').value = bal;
             if (data.Referral_status === "Redeem") {
-                const redeemSec = document.getElementById('redeemSection');
-                if(redeemSec) redeemSec.classList.add('hidden');
+                const rs = document.getElementById('redeemSection');
+                if(rs) rs.classList.add('hidden');
             }
         }
     });
@@ -45,65 +44,87 @@ async function init() {
     updatePostButton();
 }
 
-// --- 2. WITHDRAWAL LOGIC ---
+// 2. MODAL TOGGLES
 const wModal = document.getElementById('withdrawModal');
+const iModal = document.getElementById('inviteModal');
+
 document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
 document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
 
-document.getElementById('gcashConfirm').oninput = function() {
-    const btn = document.getElementById('btnClaimGcash');
-    // Match logic: Button lights up if confirmation matches activeUser (phone number)
-    if (this.value === activeUser) {
-        btn.disabled = false; 
-        btn.style.opacity = "1";
+document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
+document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
+
+// 3. GCASH LOGIC & CHANGE NUMBER (X Icon)
+const changeNumBtn = document.getElementById('changeNumber');
+const gcashPrefix = document.getElementById('gcashPrefix');
+const gcashConfirm = document.getElementById('gcashConfirm');
+const btnClaim = document.getElementById('btnClaimGcash');
+
+changeNumBtn.onclick = function() {
+    if (gcashPrefix.readOnly) {
+        gcashPrefix.readOnly = false;
+        gcashPrefix.classList.remove('locked');
+        gcashPrefix.focus();
+        this.classList.replace('fa-circle-xmark', 'fa-circle-check');
+        this.style.color = 'var(--success)';
     } else {
-        btn.disabled = true; 
-        btn.style.opacity = "0.5";
+        gcashPrefix.readOnly = true;
+        gcashPrefix.classList.add('locked');
+        this.classList.replace('fa-circle-check', 'fa-circle-xmark');
+        this.style.color = 'var(--warning)';
     }
+    validateClaim(); // Re-validate on lock/unlock
 };
 
-// --- 3. LIVE FEED (REAL-TIME CHATLOGS + SIMULATED WINNERS) ---
+gcashConfirm.oninput = validateClaim;
+
+function validateClaim() {
+    if (gcashConfirm.value === gcashPrefix.value && gcashPrefix.value.trim() !== '') {
+        btnClaim.disabled = false;
+    } else {
+        btnClaim.disabled = true;
+    }
+}
+
+// 4. LIVE FEED LOGIC (Bottom to Top via CSS flex-direction: column-reverse)
 function addFeedItem(text, type, senderID = "") {
     const logs = document.getElementById('chatLogs');
     const div = document.createElement('div');
     const isMe = senderID === activeUser;
     
-    // type: 'winner' or 'user'
-    div.className = `msg ${type === 'winner' ? 'winner' : ''} ${isMe ? 'my-chat' : ''}`;
+    // Classes: 'msg', then 'winner-msg', 'my-msg', or 'user-msg'
+    let specificClass = 'user-msg';
+    if (type === 'winner') specificClass = 'winner-msg';
+    else if (isMe) specificClass = 'my-msg';
+
+    div.className = `msg ${specificClass}`;
     div.innerHTML = text;
     
-    logs.prepend(div); // Newest on top
-    
-    // Limit to 12 items para hindi laggy ang UI
-    if (logs.childNodes.length > 12) logs.removeChild(logs.lastChild);
+    logs.prepend(div); 
+    if (logs.childNodes.length > 20) logs.removeChild(logs.lastChild);
 }
 
 function spawnWinner() {
     const randID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-    const winMsg = `<i class="fa-solid fa-gift"></i> User ${randID} received ₱100.00 GCash!`;
-    addFeedItem(winMsg, 'winner');
+    addFeedItem(`<i class="fa-solid fa-gift"></i> User ${randID} claimed ₱100.00 GCash!`, 'winner');
 }
 
 function startLiveFeed() {
-    // A. Listen to Database Chatlogs (Real-time)
-    const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(5));
+    const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(10));
     onSnapshot(q, (snapshot) => {
-        // Tuwing may bago sa DB, lalabas agad dito
         snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const data = change.doc.data();
-                // Iwasan ang duplicate kung kaka-post lang ng user manually
                 addFeedItem(data.text, 'user', data.sender);
             }
         });
     });
 
-    // B. Simulation Sequence
-    spawnWinner(); // Initial load winner
-    setInterval(spawnWinner, 60000); // 1 minute interval for winners
+    spawnWinner();
+    setInterval(spawnWinner, 60000); // 1 min bot
 }
 
-// --- 4. POST REFERRAL LOGIC & PERSISTENT TIMER ---
+// 5. POST REFERRAL LOGIC
 function updatePostButton() {
     const lastPost = localStorage.getItem('last_post_time');
     const btn = document.getElementById('btnPostRef');
@@ -126,7 +147,6 @@ function runCountdown(ms) {
     const span = document.getElementById('timer');
     const int = setInterval(() => {
         const nowRemaining = parseInt(localStorage.getItem('last_post_time')) + POST_COOLDOWN - Date.now();
-        
         if (nowRemaining <= 0) {
             clearInterval(int);
             updatePostButton();
@@ -145,33 +165,19 @@ document.getElementById('btnPostRef').onclick = async () => {
 
         const code = userSnap.data().referralCode || "GET100";
         const last5 = activeUser.slice(-5);
-        const postText = `<b>User[${last5}]</b>: Mag-register na gamit ang code ko: <b>${code}</b> 🌿`;
+        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
 
-        // Save to Firebase
         await addDoc(collection(db, "chatlogs"), {
             text: postText,
             sender: activeUser,
             timestamp: serverTimestamp()
         });
 
-        // Set Cooldown
         localStorage.setItem('last_post_time', Date.now().toString());
         updatePostButton();
-        
     } catch (err) {
         console.error("Post Error:", err);
     }
-};
-
-// --- 5. MODAL TOGGLES ---
-const iModal = document.getElementById('inviteModal');
-document.getElementById('openInvite').onclick = () => { iModal.style.display = 'flex'; };
-document.getElementById('closeModal').onclick = () => { iModal.style.display = 'none'; };
-
-// Handle closing modals by clicking outside
-window.onclick = (event) => {
-    if (event.target == wModal) wModal.style.display = "none";
-    if (event.target == iModal) iModal.style.display = "none";
 };
 
 window.onload = init;
