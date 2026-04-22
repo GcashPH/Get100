@@ -1,129 +1,124 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { 
+    getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, collection, query, where, getDocs 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-    authDomain: "get100-8333e.firebaseapp.com",
-    projectId: "get100-8333e",
-    storageBucket: "get100-8333e.firebasestorage.app",
-    messagingSenderId: "242341429618",
-    appId: "1:242341429618:web:c596b279f746dc22851deb",
-    measurementId: "G-Y8TW2M3494"
-};
-
+const firebaseConfig = { /* iyong config */ };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let step = 0; 
-let tempKey = "", confirmKey = "", mobileNum = "", dbKey = "";
-const getSignature = () => btoa(navigator.userAgent + screen.width + screen.height);
+// 1. GENERATE DEVICE SIGNATURE
+const getDeviceSignature = () => {
+    return btoa(navigator.userAgent + screen.width + screen.height).slice(0, 24);
+};
 
-window.onload = () => setTimeout(checkDevice, 2000);
+const currentSig = getDeviceSignature();
+let detectedUserID = null;
+
+// UI Elements
+const scanLayer = document.getElementById('scan-layer');
+const authLayer = document.getElementById('auth-layer');
+const userBadge = document.getElementById('user-badge');
+const mobileBox = document.getElementById('mobile-box');
+const keypadSection = document.getElementById('keypad-section');
+const maskedIdLabel = document.getElementById('masked-id');
 
 async function checkDevice() {
-    const signature = getSignature();
-      try {
-           const sigSnap = await getDoc(doc(db, "signatures", signature));
-        document.getElementById('scan-layer').classList.add('hidden');
-        document.getElementById('auth-layer').classList.remove('hidden');
+    // Hanapin ang user na may-ari ng current signature sa 'signatures' array
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("signatures", "array-contains", currentSig));
+    const querySnapshot = await getDocs(q);
 
-        if (sigSnap.exists()) {
-            mobileNum = sigSnap.data().owner;
-             const userSnap = await getDoc(doc(db, "users", mobileNum));
-            if (userSnap.exists()) {
-                dbKey = userSnap.data().secretKey;
-                setupLoginUI();
-                 }
+    setTimeout(() => {
+        scanLayer.classList.add('hidden');
+        authLayer.classList.remove('hidden');
+
+        if (!querySnapshot.empty) {
+            // DEVICE RECOGNIZED (Existing Device)
+            const userDoc = querySnapshot.docs[0];
+            detectedUserID = userDoc.id;
+            
+            showKeypadFlow(detectedUserID);
         } else {
-            setupRegisterUI();
+            // DEVICE NOT RECOGNIZED (New Device or New User)
+            document.getElementById('ui-subtitle').innerText = "Security Check: Device not registered.";
+            mobileBox.classList.remove('hidden');
         }
-    } catch (e) {
-          document.getElementById('ui-subtitle').innerText = "Check Firestore Connection/Rules";
-    }
+    }, 2000);
 }
 
-function setupLoginUI() {
-    step = 4;
-    document.getElementById('ui-title').innerText = "SECURE LOGIN";
-    document.getElementById('ui-subtitle').innerText = "Welcome back!";
-    document.getElementById('user-badge').classList.remove('hidden');
-    document.getElementById('mobile-box').classList.add('hidden');
-    document.getElementById('keypad-section').classList.remove('hidden');
-    document.getElementById('masked-id').innerText = mobileNum.substring(0,2) + "****" + mobileNum.substring(7);
+function showKeypadFlow(uid) {
+    localStorage.setItem('active_user', uid);
+    userBadge.classList.remove('hidden');
+    mobileBox.classList.add('hidden');
+    const masked = uid.replace(/(\d{2})(\d{5})(\d{4})/, "$1*******$3");
+    maskedIdLabel.innerText = masked;
+    keypadSection.classList.remove('hidden');
 }
 
-function setupRegisterUI() {
-    step = 1;
-    document.getElementById('ui-title').innerText = "REGISTER DEVICE";
-     document.getElementById('mobile-box').classList.remove('hidden');
-}
-
-// Keypad Actions
-document.querySelectorAll('.key').forEach(k => {
-    k.onclick = () => {
-        const val = k.dataset.val;
-        if (step === 4) handleLogin(val);
-        else handleRegistration(val);
+// 2. ACTION LOGIC (Login or Register New Device)
+let enteredPin = "";
+document.querySelectorAll('.key').forEach(key => {
+    key.onclick = () => {
+        if (enteredPin.length < 6) {
+            enteredPin += key.dataset.val;
+            updateDots();
+            if (enteredPin.length === 6) document.getElementById('btnAction').classList.remove('hidden');
+        }
     };
 });
 
-function handleLogin(val) {
-    if (tempKey.length < 6) {
-        tempKey += val;
-        updateDots(tempKey.length);
-        if (tempKey.length === 6) {
-            if (tempKey === dbKey) {
-                localStorage.setItem('active_user', mobileNum);
-                window.location.href = "main.html";
-            } else {
-                  alert("Wrong PIN");
-                tempKey = ""; resetDots();
-            }
-        }
-    }
+function updateDots() {
+    document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i < enteredPin.length);
+    });
 }
-
-function handleRegistration(val) {
-    if (step === 2) {
-        tempKey += val;
-        updateDots(tempKey.length);
-        if (tempKey.length === 6) { step = 3; resetDots(); document.getElementById('ui-subtitle').innerText = "Confirm PIN"; }
-    } else if (step === 3) {
-        confirmKey += val;
-        updateDots(confirmKey.length);
-        if (confirmKey.length === 6) {
-            if (tempKey === confirmKey) {
-                document.getElementById('btnAction').classList.remove('hidden');
-                document.getElementById('ui-subtitle').innerText = "PIN Match!";
-            } else {
-                alert("Mismatch!"); resetDots(); tempKey = ""; confirmKey = ""; step = 2;
-            }
-        }
-    }
-}
-
-document.getElementById('mobile').oninput = (e) => {
-     if (e.target.value.length === 11) {
-        mobileNum = e.target.value;
-        document.getElementById('mobile-box').classList.add('hidden');
-        document.getElementById('keypad-section').classList.remove('hidden');
-         step = 2;
-    }
-};
 
 document.getElementById('btnAction').onclick = async () => {
-    const sig = getSignature();
-    const myRef = Math.random().toString(36).substring(2, 8).toUpperCase();
-    await setDoc(doc(db, "users", mobileNum), { 
-        secretKey: tempKey, 
-        earnings: 0, 
-        referralCode: myRef, 
-        registeredAt: new Date().toISOString() 
-    });
-    await setDoc(doc(db, "signatures", sig), { owner: mobileNum });
-    localStorage.setItem('active_user', mobileNum);
-    window.location.href = "main.html";
+    const mobileNum = document.getElementById('mobile').value;
+
+    if (!detectedUserID) {
+        // CHECK KUNG REGISTERED NA ANG USER SA IBANG DEVICE
+        const userRef = doc(db, "users", mobileNum);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            // EXISTING USER, NEW DEVICE: I-verify ang Secret Key
+            if (userSnap.data().secretKey === enteredPin) {
+                await updateDoc(userRef, {
+                    signatures: arrayUnion(currentSig) // Idagdag ang bagong device sa array
+                });
+                loginSuccess(mobileNum);
+            } else {
+                alert("Wrong Secret Key for this account!");
+            }
+        } else {
+            // TOTOOONG NEW USER: Fresh Registration
+            if (mobileNum.length !== 11) return alert("Invalid Number");
+            await setDoc(userRef, {
+                userID: mobileNum,
+                secretKey: enteredPin,
+                earnings: 0,
+                referralCode: "REF" + Math.floor(1000 + Math.random() * 9000),
+                signatures: [currentSig] // Unang device sa array
+            });
+            loginSuccess(mobileNum);
+        }
+    } else {
+        // NORMAL LOGIN PARA SA RECOGNIZED DEVICE
+        const userSnap = await getDoc(doc(db, "users", detectedUserID));
+        if (userSnap.data().secretKey === enteredPin) {
+            loginSuccess(detectedUserID);
+        } else {
+            alert("Incorrect Key!");
+            enteredPin = ""; updateDots();
+        }
+    }
 };
 
-function updateDots(l) { document.querySelectorAll('.dot').forEach((d, i) => i < l ? d.classList.add('active') : d.classList.remove('active')); }
-function resetDots() { document.querySelectorAll('.dot').forEach(d => d.classList.remove('active')); }
+function loginSuccess(uid) {
+    localStorage.setItem('active_user', uid);
+    window.location.href = "main.html";
+}
+
+window.onload = checkDevice;
