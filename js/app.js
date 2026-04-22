@@ -313,4 +313,9 @@ if(document.getElementById('btnPostToFB')) {
     };
 }
 
+function setupDashboard(data) {
+    document.body.style.display = "block"; // Ipakita lang kapag "Authorized" na
+    // ... rest of the code
+}
+
 window.onload = init;
