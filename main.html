@@ -11,76 +11,81 @@
 <body>
 
 <div class="dashboard">
-    <div class="balance-card">
-        <div class="balance-label">MY SAVINGS</div>
-        <div class="balance-amount">₱<span id="mainBalance">0.00</span></div>
-
-        <button class="btn btn-withdraw" id="openWithdraw">CASH OUT</button>
-        <button class="btn btn-invite" id="openInvite">INVITE FRIENDS</button>
+    <div class="glass-card balance-section">
+        <div class="label">MY SAVINGS</div>
+        <div class="amount">₱<span id="mainBalance">0.00</span></div>
+        
+        <div class="action-grid">
+            <button class="btn btn-primary" id="openWithdraw">CASH OUT</button>
+            <button class="btn btn-primary" id="openInvite">INVITE FRIENDS</button>
+        </div>
     </div>
 
-    <div class="chat-box">
-        <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-soft); margin-bottom: 15px; text-transform: uppercase;">Social Activity Feed</div>
-        
-        <div class="chat-logs" id="chatLogs" style="height: 250px; overflow-y: auto;">
+    <div class="glass-card feed-section">
+        <div class="feed-header">
+            <i class="fa-solid fa-leaf"></i> LIVE NETWORK FEED
+        </div>
+
+        <div class="chat-logs" id="chatLogs">
             </div>
 
-        <div class="chat-footer" style="margin-top: 15px;">
-            <button class="btn btn-post-static" id="btnPostRef">POST MY REFERRAL CODE</button>
-            <div id="cooldownTimer" class="timer-text hidden" style="color: #d63031;">Ready in: <span id="timer">00:00</span></div>
+        <div class="feed-footer">
+            <button class="btn btn-post" id="btnPostRef">
+                <i class="fa-solid fa-paper-plane"></i> POST MY REFERRAL CODE
+            </button>
+            <div id="cooldownTimer" class="timer-box hidden">
+                Next post in: <span id="timer">00:00</span>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="modal" id="withdrawModal">
-    <div class="modal-content neon-border">
-        <span class="close-btn" id="closeWithdraw">×</span>
-        <h3 class="neon-text-blue">CASH OUT</h3>
+    <div class="modal-content glass-morph">
+        <span class="close-btn" id="closeWithdraw">&times;</span>
+        <h2 class="modal-title">CASH OUT</h2>
         
-        <div class="withdraw-form">
-            <label style="font-size: 0.7rem; color: #94a3b8;">Amount to Withdraw</label>
-            <input type="text" id="withdrawAmount" class="withdraw-input" readonly>
+        <div class="form-container">
+            <div class="input-group">
+                <label>Amount to Withdraw</label>
+                <input type="text" id="withdrawAmount" class="input-field readonly" readonly>
+            </div>
 
-            <label style="font-size: 0.7rem; color: #94a3b8;">GCash Account Number</label>
-            <input type="text" id="gcashPrefix" class="withdraw-input" readonly>
+            <div class="input-group">
+                <label>GCash Account Number</label>
+                <input type="text" id="gcashPrefix" class="input-field readonly" readonly>
+            </div>
             
-            <label style="font-size: 0.7rem; color: #94a3b8;">Confirm Account Number</label>
-            <input type="text" id="gcashConfirm" class="withdraw-input" placeholder="Type manually..." onpaste="return false;">
+            <div class="input-group">
+                <label>Confirm Account Number</label>
+                <div class="input-wrapper">
+                    <input type="text" id="gcashConfirm" class="input-field" placeholder="Retype number manually..." onpaste="return false;">
+                </div>
+            </div>
             
-            <button class="btn btn-neon-blue" id="btnClaimGcash" disabled style="opacity: 0.5;">CLAIM THRU GCASH</button>
+            <button class="btn btn-claim" id="btnClaimGcash" disabled>CLAIM THRU GCASH</button>
         </div>
     </div>
 </div>
 
 <div class="modal" id="inviteModal">
-    <div class="modal-content">
-        <span class="close-btn" id="closeModal">×</span>
-        
+    <div class="modal-content glass-morph">
+        <span class="close-btn" id="closeModal">&times;</span>
         <div id="modalPage1">
-            <h3 style="text-align: center; margin: 0;">Account Profile</h3>
-            <div class="user-id-box">
-                <span class="user-id-text" id="displayUserID">09000000000</span>
-                <button class="view-icon-btn" id="viewMyCode"><i class="fa-solid fa-eye"></i></button>
+            <h2 class="modal-title">ACCOUNT PROFILE</h2>
+            <div class="id-badge">
+                <span id="displayUserID">09000000000</span>
             </div>
-            <hr class="divider">
-            <div id="redeemSection" class="redeem-section">
-                <p style="font-size: 0.7rem; font-weight: 800; text-align: center;">ENTER REFERRAL CODE</p>
-                <input type="text" id="inputFriendCode" class="redeem-input" placeholder="6-CHAR CODE">
-                <button class="btn btn-verify" id="btnVerify" style="background:#000; color:#fff;">VERIFY CODE</button>
+            
+            <div id="redeemSection" class="redeem-box">
+                <p class="small-label">HAVE A REFERRAL CODE?</p>
+                <input type="text" id="inputFriendCode" class="input-field" placeholder="ENTER 6-CHAR CODE">
+                <button class="btn btn-claim" id="btnVerify">VERIFY CODE</button>
             </div>
-            <button class="btn btn-fb" id="goSharePage">SHARE ON FACEBOOK</button>
-        </div>
 
-        <div id="modalPage2" class="hidden">
-            <h3 style="margin: 0;">Post to Social Media</h3>
-            <div class="share-grid">
-                <div class="photo-box"><img id="promoPhoto" src="" alt="Promo"></div>
-                <div class="caption-box">
-                    <div id="captionText">Loading...</div>
-                    <button class="copy-btn" id="btnCopyCaption"><i class="fa-solid fa-copy"></i> Copy</button>
-                </div>
-            </div>
-            <button class="btn" id="backToP1" style="background:none; color:#64748b; font-size:0.8rem; margin-top:15px;">← Back</button>
+            <button class="btn btn-fb" id="goSharePage">
+                <i class="fa-brands fa-facebook"></i> SHARE ON FACEBOOK
+            </button>
         </div>
     </div>
 </div>
