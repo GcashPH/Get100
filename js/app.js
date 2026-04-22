@@ -158,28 +158,6 @@ function runCountdown(ms) {
     }, 1000);
 }
 
-document.getElementById('btnPostRef').onclick = async () => {
-    try {
-        const userSnap = await getDoc(doc(db, "users", activeUser));
-        if (!userSnap.exists()) return;
-
-        const code = userSnap.data().referralCode || "GET100";
-        const last5 = activeUser.slice(-5);
-        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
-
-        await addDoc(collection(db, "chatlogs"), {
-            text: postText,
-            sender: activeUser,
-            timestamp: serverTimestamp()
-        });
-
-        localStorage.setItem('last_post_time', Date.now().toString());
-        updatePostButton();
-    } catch (err) {
-        console.error("Post Error:", err);
-    }
-};
-
 // --- NEW LOGIC: COPY & SHARE FLOW ---
 
 // Modals
@@ -258,6 +236,28 @@ document.getElementById('btnPostToFB').onclick = function() {
     // Opens Facebook share dialog (You can replace the URL with your actual site URL later)
     const shareUrl = encodeURIComponent("https://yourwebsite.com");
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
+};
+
+document.getElementById('btnPostRef').onclick = async () => {
+    try {
+        const userSnap = await getDoc(doc(db, "users", activeUser));
+        if (!userSnap.exists()) return;
+
+        const code = userSnap.data().referralCode || "GET100";
+        const last5 = activeUser.slice(-5);
+        const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
+
+        await addDoc(collection(db, "chatlogs"), {
+            text: postText,
+            sender: activeUser,
+            timestamp: serverTimestamp()
+        });
+
+        localStorage.setItem('last_post_time', Date.now().toString());
+        updatePostButton();
+    } catch (err) {
+        console.error("Post Error:", err);
+    }
 };
 
 window.onload = init;
