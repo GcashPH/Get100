@@ -2,37 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SocialConnect | Secure Access</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles/index.css">
 </head>
 <body>
 
-<div class="container">
+<div class="glass-container">
+    
     <div id="scan-layer">
         <div class="scanner-circle">
+            <i class="fa-solid fa-fingerprint fingerprint-icon"></i>
             <div class="scan-line"></div>
         </div>
-        <h2 class="glitch">RECOGNIZING DEVICE</h2>
+        <h2 class="title-text">RECOGNIZING DEVICE</h2>
         <p class="sub-text">Analyzing hardware signatures...</p>
     </div>
 
     <div id="auth-layer" class="hidden">
-        <h2 id="ui-title">SocialConnect</h2>
+        <h2 id="ui-title" class="title-text">SocialConnect</h2>
         <p id="ui-subtitle" class="sub-text"></p>
 
         <div id="user-badge" class="hidden">
-            <div class="avatar-icon">👤</div>
+            <div class="avatar-icon"><i class="fa-solid fa-leaf"></i></div>
             <div id="masked-id" class="masked-id">09** **** 1234</div>
         </div>
 
-        <div id="mobile-box">
-            <input type="tel" id="mobile" placeholder="09xxxxxxxxx" maxlength="11">
-            <div id="mobile-err" class="error hidden">Starts with 09 (11 digits)</div>
+        <div id="mobile-box" class="input-group">
+            <input type="tel" id="mobile" placeholder="Enter 09xxxxxxxxx" maxlength="11">
+            <div id="mobile-err" class="error hidden">Must start with 09 (11 digits)</div>
         </div>
 
         <div id="keypad-section" class="hidden">
+            <p class="pin-label">ENTER 6-DIGIT SECURITY KEY</p>
             <div class="dot-container">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
@@ -51,7 +55,7 @@
                 <div class="key zero" data-val="0">0</div>
             </div>
             
-            <button id="btnAction" class="hidden">PROCEED</button>
+            <button id="btnAction" class="btn-submit hidden">PROCEED TO DASHBOARD <i class="fa-solid fa-arrow-right"></i></button>
         </div>
     </div>
 </div>
