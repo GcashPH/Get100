@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | SocialConnect</title>
+    <title>Admin View | Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,38 +15,80 @@
         }
 
         body { margin: 0; font-family: 'Inter', sans-serif; background: #f1f5f9; display: flex; justify-content: center; min-height: 100vh; }
+        
         .dashboard-container { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
         
-        /* Dashboard Elements */
-        .earnings-card { background: white; padding: 30px; border-radius: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
-        .amount-display { font-size: 3rem; font-weight: 800; margin: 15px 0; }
-        .btn { padding: 16px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.3s; }
-        .btn-invite { background: var(--primary); color: white; }
-
-        /* --- POP-UP / MODAL STYLES --- */
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 25px; position: relative; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-muted); font-weight: bold; }
+        /* Dashboard Card */
+        .earnings-card { 
+            background: white; padding: 30px; border-radius: 32px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; 
+            border: 1px solid rgba(255,255,255,1);
+        }
         
-        .user-id-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; }
-        .id-text { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
-        .view-icon { background: #f1f5f9; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+        .amount-display { font-size: 3.2rem; font-weight: 800; margin: 15px 0; color: var(--text-dark); }
+        .peso-sign { font-size: 1.8rem; color: var(--primary); margin-right: 5px; }
+
+        .btn { padding: 16px; border: none; border-radius: 18px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.3s; font-size: 1rem; }
+        .btn-invite { background: var(--primary); color: white; box-shadow: 0 8px 15px rgba(79, 70, 229, 0.3); }
+
+        /* --- POP-UP MODAL --- */
+        .modal-overlay { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); 
+            display: none; justify-content: center; align-items: center; z-index: 100; 
+        }
+        
+        .modal-content { 
+            background: white; width: 90%; max-width: 380px; padding: 25px; 
+            border-radius: 28px; position: relative; text-align: center; 
+        }
+
+        .close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-muted); }
+        
+        .user-id-display { 
+            display: flex; align-items: center; justify-content: center; gap: 10px; 
+            margin: 20px 0; background: #f8fafc; padding: 12px; border-radius: 15px;
+        }
+        .id-label { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+        .view-btn { border: none; background: #e2e8f0; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; }
 
         .double-line { border-top: 3px double #e2e8f0; margin: 20px 0; }
 
-        .referral-section { background: #fefce8; padding: 15px; border-radius: 15px; border: 1px dashed #facc15; margin-bottom: 15px; }
-        .ref-input { width: 80%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; margin-bottom: 10px; }
+        /* Referral Section */
+        .referral-box { 
+            background: #fffbeb; border: 1px dashed #facc15; 
+            padding: 15px; border-radius: 18px; margin-bottom: 20px; 
+        }
+        .ref-input { 
+            width: 90%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; 
+            text-align: center; margin-bottom: 10px; outline: none;
+        }
+
+        .btn-fb { background: #1877F2; color: white; }
+
+        /* --- SHARE PAGE LAYOUT --- */
+        .post-container { display: none; text-align: left; animation: fadeIn 0.4s; }
+        .post-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
         
-        .btn-fb { background: #1877F2; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .photo-col img { width: 100%; border-radius: 15px; border: 1px solid #eee; }
+        .caption-area { 
+            background: #f1f5f9; padding: 10px; border-radius: 10px; 
+            font-size: 0.75rem; border: 1px solid #e2e8f0; margin-top: 5px; line-height: 1.4;
+        }
+        
+        .link-box { 
+            background: #eef2ff; padding: 12px; border-radius: 12px; 
+            border: 1px solid #c7d2fe; font-size: 0.8rem; color: var(--primary); 
+            font-weight: 700; word-break: break-all;
+        }
+        
+        .copy-tag { 
+            display: inline-block; background: #475569; color: white; 
+            padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; 
+            margin-top: 6px; cursor: pointer;
+        }
 
-        /* --- POST PAGE STYLES --- */
-        .post-page { display: none; text-align: left; }
-        .post-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .photo-col img { width: 100%; border-radius: 12px; border: 1px solid #ddd; }
-        .caption-box { background: #f8fafc; padding: 10px; border-radius: 10px; font-size: 0.8rem; border: 1px solid #e2e8f0; margin-top: 5px; }
-        .short-link-box { background: #eef2ff; padding: 10px; border-radius: 10px; border: 1px solid #c7d2fe; font-weight: 600; font-size: 0.85rem; color: var(--primary); word-break: break-all; }
-        .copy-btn { background: #475569; color: white; padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; border: none; cursor: pointer; margin-top: 5px; }
-
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .hidden { display: none; }
     </style>
 </head>
@@ -54,8 +96,8 @@
 
 <div class="dashboard-container">
     <div class="earnings-card">
-        <div style="text-align: left; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">MY EARNINGS</div>
-        <div class="amount-display">₱<span id="balance">0.00</span></div>
+        <div style="text-align: left; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px;">MY EARNINGS</div>
+        <div class="amount-display"><span class="peso-sign">₱</span>0.00</div>
         <button class="btn btn-invite" id="openInvite">Invite Friends</button>
     </div>
 </div>
@@ -65,45 +107,41 @@
         <span class="close-x" id="closeInvite">&times;</span>
         
         <div id="step-invite">
-            <h3>Invite & Earn</h3>
-            <div class="user-id-row">
-                <span class="id-text" id="pop-userid">09*********</span>
-                <button class="view-icon" onclick="alert('Your Referral Code: ' + localStorage.getItem('active_user'))">👁️ View</button>
+            <h3 style="margin-top: 10px;">Invite Partners</h3>
+            <div class="user-id-display">
+                <span class="id-label" id="display-id">09123456789</span>
+                <button class="view-btn">View Code</button>
             </div>
 
             <div class="double-line"></div>
 
-            <div id="referral-input-section" class="referral-section hidden">
-                <p style="font-size: 0.75rem; margin-bottom: 8px; font-weight: 600;">Enter Referral Code to get ₱100</p>
-                <input type="tel" id="inputRefCode" class="ref-input" placeholder="Enter Friend's Code">
-                <button class="btn" style="background:#facc15; color:#000; padding:10px; margin-top:0;" id="btnVerifyRef">Verify Code</button>
+            <div class="referral-box" id="ref-section">
+                <p style="font-size: 0.7rem; font-weight: 700; margin-bottom: 8px;">HAVE A REFERRAL CODE?</p>
+                <input type="tel" class="ref-input" placeholder="Enter Code">
+                <button class="btn" style="background:#000; color:#fff; padding:10px; margin-top:0; font-size:0.8rem;">Verify & Get ₱100</button>
             </div>
 
-            <button class="btn btn-fb" id="btnGoToShare">
-                SHARE ON FACEBOOK
-            </button>
+            <button class="btn btn-fb" id="btnGoShare">SHARE ON FACEBOOK</button>
         </div>
 
-        <div id="step-share" class="post-page">
-            <h3 style="text-align: center;">Share to Social Media</h3>
+        <div id="step-share" class="post-container">
+            <h3 style="text-align: center;">Post to Social Media</h3>
             <div class="post-grid">
                 <div class="photo-col">
-                    <p style="font-size: 0.7rem; font-weight: 700;">1. DOWNLOAD PHOTO</p>
-                    <img id="db-photo" src="https://via.placeholder.com/150/4f46e5/ffffff?text=Get+100+Now" alt="Promo">
-                    <div class="caption-box" id="caption-text">
-                        Try this new app and get ₱100! 
-                        Use my code: <span id="my-code-caption"></span>
-                        #Get100 #Referral_<span id="my-hash"></span>
+                    <p style="font-size: 0.65rem; font-weight: 800;">1. DOWNLOAD IMAGE</p>
+                    <img src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=300" alt="Sample">
+                    <div class="caption-area" id="caption-text">
+                        Get ₱100.00 instantly!<br>
+                        Use my Referral: <b>09123456789</b><br>
+                        #Get100 #Referral_09123456789
                     </div>
-                    <button class="copy-btn" id="btnCopyCaption">Copy Caption</button>
+                    <div class="copy-tag" onclick="copyText('caption-text')">Copy Caption</div>
                 </div>
 
                 <div class="link-col">
-                    <p style="font-size: 0.7rem; font-weight: 700;">2. USE THIS LINK</p>
-                    <div class="short-link-box" id="db-shortlink">
-                        https://bit.ly/sample-link
-                    </div>
-                    <button class="copy-btn" id="btnCopyLink">Copy Link</button>
+                    <p style="font-size: 0.65rem; font-weight: 800;">2. ATTACH LINK</p>
+                    <div class="link-box" id="link-text">https://social.link/invite-user</div>
+                    <div class="copy-tag" onclick="copyText('link-text')">Copy Link</div>
                 </div>
             </div>
             <button class="btn" style="background:#e2e8f0; color:#475569;" id="btnBack">Back</button>
@@ -111,117 +149,42 @@
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get, set, child, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-        authDomain: "get100-8333e.firebaseapp.com",
-        databaseURL: "https://get100-8333e-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "get100-8333e",
-        storageBucket: "get100-8333e.firebasestorage.app",
-        messagingSenderId: "242341429618",
-        appId: "1:242341429618:web:c596b279f746dc22851deb",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const currentUser = localStorage.getItem('active_user');
-
-    // UI Elements
+<script>
+    // UI Interaction Logic (Static for Admin Preview)
     const modal = document.getElementById('modalInvite');
     const stepInvite = document.getElementById('step-invite');
     const stepShare = document.getElementById('step-share');
 
-    window.onload = async () => {
-        if (!currentUser) { window.location.href = "index.html"; return; }
-        
-        document.getElementById('pop-userid').innerText = currentUser;
-        document.getElementById('my-code-caption').innerText = currentUser;
-        document.getElementById('my-hash').innerText = currentUser;
-
-        // Load Balance
-        const userRef = ref(db, `users/${currentUser}`);
-        const snap = await get(userRef);
-        if (snap.exists()) {
-            const data = snap.val();
-            document.getElementById('balance').innerText = (data.earnings || 0).toFixed(2);
-            
-            // Check kung nakapag-input na ng Referral Code
-            if (!data.usedReferral) {
-                document.getElementById('referral-input-section').classList.remove('hidden');
-            }
-        }
-
-        // Load Global Promo Data (Photos and Links)
-        const promoSnap = await get(child(ref(db), 'promo_settings'));
-        if (promoSnap.exists()) {
-            const promo = promoSnap.val();
-            document.getElementById('db-photo').src = promo.image_url;
-            document.getElementById('db-shortlink').innerText = promo.short_link;
-        } else {
-            // Initial Seed for Database (Sample Data)
-            set(ref(db, 'promo_settings'), {
-                image_url: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=500",
-                short_link: "https://socialconnect.page.link/invite"
-            });
-        }
-    };
-
-    // Modal Controls
+    // Open/Close
     document.getElementById('openInvite').onclick = () => modal.style.display = 'flex';
     document.getElementById('closeInvite').onclick = () => {
         modal.style.display = 'none';
-        stepInvite.style.display = 'block';
-        stepShare.style.display = 'none';
+        resetSteps();
     };
 
-    // Referral Verification Logic
-    document.getElementById('btnVerifyRef').onclick = async () => {
-        const refCode = document.getElementById('inputRefCode').value;
-        if (refCode === currentUser) { alert("You cannot use your own code!"); return; }
-
-        const targetRef = ref(db, `users/${refCode}`);
-        const targetSnap = await get(targetRef);
-
-        if (targetSnap.exists()) {
-            // 1. Give 100 to Current User
-            await update(ref(db, `users/${currentUser}`), {
-                earnings: increment(100),
-                usedReferral: true
-            });
-            // 2. Hide section
-            document.getElementById('referral-input-section').classList.add('hidden');
-            alert("Success! ₱100 added to your dashboard.");
-            location.reload();
-        } else {
-            alert("Invalid Referral Code!");
-        }
-    };
-
-    // Navigation to Share Page
-    document.getElementById('btnGoToShare').onclick = () => {
+    // Navigation
+    document.getElementById('btnGoShare').onclick = () => {
         stepInvite.style.display = 'none';
         stepShare.style.display = 'block';
     };
-    document.getElementById('btnBack').onclick = () => {
+    document.getElementById('btnBack').onclick = () => resetSteps();
+
+    function resetSteps() {
         stepInvite.style.display = 'block';
         stepShare.style.display = 'none';
-    };
+    }
 
-    // Copy Functions
-    document.getElementById('btnCopyCaption').onclick = () => {
-        const text = document.getElementById('caption-text').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Caption Copied!");
-    };
-    document.getElementById('btnCopyLink').onclick = () => {
-        const text = document.getElementById('db-shortlink').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Link Copied!");
-    };
+    // Simple Copy Alert
+    function copyText(id) {
+        const text = document.getElementById(id).innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Copied to clipboard!');
+        });
+    }
 
+    // Mabilisang preview: kung gusto mong i-test ang pagkawala ng referral box
+    // Pwedeng i-comment out ito para makita ang referral box ulit.
+    // document.getElementById('ref-section').classList.add('hidden');
 </script>
 
 </body>
