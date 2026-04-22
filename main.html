@@ -12,21 +12,22 @@
 
 <div class="dashboard">
     <div class="balance-card">
-        <div class="balance-label">AVAILABLE BALANCE</div>
+        <div class="balance-label">MY SAVINGS</div>
         <div class="balance-amount">₱<span id="mainBalance">0.00</span></div>
 
-        <button class="btn btn-withdraw" id="openWithdraw">WITHDRAWAL</button>
-        <button class="btn btn-invite" id="openInvite">INVITE & EARN</button>
+        <button class="btn btn-withdraw" id="openWithdraw">CASH OUT</button>
+        <button class="btn btn-invite" id="openInvite">INVITE FRIENDS</button>
     </div>
 
     <div class="chat-box">
-        <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; margin-bottom: 15px;">LIVE NETWORK FEED</div>
+        <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary-soft); margin-bottom: 15px; text-transform: uppercase;">Social Activity Feed</div>
         
-        <div class="chat-logs" id="chatLogs"></div>
+        <div class="chat-logs" id="chatLogs" style="height: 250px; overflow-y: auto;">
+            </div>
 
-        <div class="chat-footer">
-            <button class="btn btn-post-neon" id="btnPostRef">POST MY REFERRAL CODE</button>
-            <div id="cooldownTimer" class="timer-text hidden">Ready in: <span id="timer">00:00</span></div>
+        <div class="chat-footer" style="margin-top: 15px;">
+            <button class="btn btn-post-static" id="btnPostRef">POST MY REFERRAL CODE</button>
+            <div id="cooldownTimer" class="timer-text hidden" style="color: #d63031;">Ready in: <span id="timer">00:00</span></div>
         </div>
     </div>
 </div>
