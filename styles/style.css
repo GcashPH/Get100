@@ -1,23 +1,22 @@
-/* --- ROOT VARIABLES (PREMIUM DARK PALETTE) --- */
 :root {
-    --bg-dark: #0f172a;           /* Deep Navy */
-    --card-bg: #1e293b;           /* Slate Blue */
-    --text-main: #f8fafc;         /* Off White */
-    --text-muted: #94a3b8;        /* Muted Gray */
-    --accent-neon: #00d2ff;       /* Soft Neon Blue */
-    --accent-green: #39ff14;      /* Neon Green (POV) */
-    --accent-fb: #1877F2;         /* FB Blue */
-    --border-color: #334155;      /* Subtle Border */
-    --danger: #ef4444;
+    --primary-soft: #7fb069;     /* Sage Green */
+    --accent-blue: #70a1ff;      /* Sky Blue */
+    --bg-light: #f0f7f4;         /* Off-white Green */
+    --text-dark: #2d3436;
+    --glass-white: rgba(255, 255, 255, 0.8);
 }
 
-/* --- BASE STYLES --- */
 body {
     margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    color: var(--text-main);
+    /* Background Nature Image */
+    background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), 
+                url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=80');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: var(--text-dark);
     display: flex;
     justify-content: center;
     min-height: 100vh;
@@ -28,91 +27,95 @@ body {
     max-width: 420px;
     padding: 20px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
 }
 
-/* --- BALANCE CARD --- */
-.balance-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+/* Glassmorphism Card */
+.balance-card, .chat-box {
+    background: var(--glass-white);
+    backdrop-filter: blur(10px);
     border-radius: 30px;
-    padding: 30px 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 25px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
     text-align: center;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
 
 .balance-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 800;
-    color: var(--text-muted);
-    letter-spacing: 1.5px;
-    margin-bottom: 5px;
+    color: #636e72;
+    letter-spacing: 1px;
 }
 
 .balance-amount {
     font-size: 3rem;
     font-weight: 800;
-    margin-bottom: 20px;
-    color: var(--text-main);
+    color: var(--primary-soft);
+    margin: 10px 0 20px 0;
 }
 
-/* --- BUTTONS (UNIFIED STYLE) --- */
+/* Unified Button Design (Social/Peaceful Style) */
 .btn {
     width: 100%;
-    padding: 16px;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    padding: 15px;
+    border-radius: 15px;
     border: none;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 0.9rem;
 }
 
-/* Dashboard Action Buttons */
 .btn-withdraw, .btn-invite {
-    background: rgba(0, 210, 255, 0.08);
-    border: 1.5px solid var(--accent-neon);
-    color: var(--accent-neon);
-    margin-top: 12px;
+    background: var(--primary-soft);
+    color: white;
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(127, 176, 105, 0.2);
 }
 
 .btn-withdraw:hover, .btn-invite:hover {
-    background: var(--accent-neon);
-    color: var(--bg-dark);
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+    transform: translateY(-2px);
+    background: #6a9955;
 }
 
-/* Neon Claim Button */
-.btn-neon-blue {
-    background: var(--bg-dark);
-    color: var(--accent-neon);
-    border: 2px solid var(--accent-neon);
-    box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+/* POST MY REFERRAL CODE Button (Disabled/Static Style) */
+.btn-post-static {
+    background: white;
+    color: var(--primary-soft);
+    border: 2px solid var(--primary-soft);
+    cursor: default; /* Hindi clickable */
+    opacity: 0.8;
+    pointer-events: none; /* Disable interaction */
+    text-transform: uppercase;
 }
 
-/* Neon Post Button (Chat) */
-.btn-post-neon {
-    background: #000;
-    color: var(--accent-green);
-    border: 2px solid var(--accent-green);
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+/* Chat Items */
+.msg {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    animation: fadeIn 0.5s ease-in;
+    text-align: left;
 }
 
-.btn-post-neon:disabled {
-    opacity: 0.3;
-    border-color: var(--text-muted);
-    color: var(--text-muted);
+.msg.winner {
+    background: #e8f5e9;
+    border-left: 4px solid var(--primary-soft);
 }
 
-.btn-fb { background: var(--accent-fb); color: white; }
+.msg.my-chat {
+    background: #e3f2fd;
+    border-left: 4px solid var(--accent-blue);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
 
 /* --- LIVE FEED / CHAT BOX --- */
 .chat-box {
