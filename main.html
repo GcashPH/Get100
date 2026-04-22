@@ -158,7 +158,7 @@
     // 4. DISPLAY ONLY: WINNERS (Not saved to DB)
     function showWinner() {
         const randomID = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-        const html = `<img src="gc_icon.png" class="gc-icon"> User ${randomID} earned ₱100.00 GCash!`;
+        const html = `<img src="/images/gc_icon.png" class="gc-icon"> User ${randomID} earned ₱100.00 GCash!`;
         appendChat(html, 'winner');
     }
 
