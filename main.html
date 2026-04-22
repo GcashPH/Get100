@@ -6,57 +6,7 @@
     <title>Dashboard | SocialConnect</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --primary: #4f46e5; --bg: #f8fafc; --text: #1e293b; --success: #22c55e; }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; }
-        .dashboard { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; }
-
-        /* Balance Section Remastered */
-        .balance-card { 
-            background: linear-gradient(135deg, #4f46e5, #7c3aed); 
-            padding: 30px 20px; border-radius: 35px; color: white;
-            box-shadow: 0 15px 30px rgba(79, 70, 229, 0.2); text-align: center; margin-bottom: 20px;
-        }
-        .balance-label { font-size: 0.75rem; font-weight: 600; opacity: 0.8; letter-spacing: 1px; }
-        .balance-amount { font-size: 3.2rem; font-weight: 800; margin: 5px 0; }
-        
-        /* Chat Box */
-        .chat-box { background: white; border-radius: 30px; padding: 20px; height: 320px; display: flex; flex-direction: column; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .chat-logs { flex-grow: 1; overflow-y: auto; font-size: 0.85rem; padding: 5px; }
-        .msg { margin-bottom: 12px; padding: 12px; border-radius: 18px; background: #f1f5f9; animation: slideIn 0.3s ease; line-height: 1.4; }
-        .winner { border-left: 5px solid var(--success); background: #f0fdf4; color: #166534; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .gc-icon { width: 22px; height: 22px; }
-
-        /* Modal Styles */
-        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; width: 90%; max-width: 360px; border-radius: 35px; position: relative; padding: 30px; box-sizing: border-box; overflow: hidden; }
-        .close-btn { position: absolute; top: 20px; right: 25px; font-size: 1.5rem; cursor: pointer; color: #94a3b8; }
-
-        /* User ID Section */
-        .user-id-box { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 20px 0; }
-        .user-id-text { font-size: 1.4rem; font-weight: 800; color: var(--text); }
-        .view-icon-btn { background: #f1f5f9; border: none; padding: 10px; border-radius: 12px; cursor: pointer; color: var(--primary); }
-        
-        .divider { border: none; border-top: 2px double #e2e8f0; margin: 20px 0; }
-
-        /* Redeem Section */
-        .redeem-section { background: #fffbeb; padding: 15px; border-radius: 20px; border: 1px dashed #facc15; margin-bottom: 20px; }
-        .redeem-input { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd; text-align: center; font-weight: 800; box-sizing: border-box; margin-bottom: 10px; }
-
-        /* Share Page Column Layout */
-        .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; text-align: left; }
-        .photo-box img { width: 100%; border-radius: 15px; border: 1px solid #eee; }
-        .caption-box { font-size: 0.7rem; color: #64748b; background: #f8fafc; padding: 8px; border-radius: 10px; position: relative; }
-        .copy-btn { width: 100%; background: #1e293b; color: white; padding: 8px; border-radius: 8px; font-size: 0.7rem; border: none; cursor: pointer; margin-top: 5px; }
-
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 0.9rem; }
-        .btn-invite { background: white; color: var(--primary); }
-        .btn-fb { background: #1877F2; color: white; }
-        .btn-verify { background: #000; color: white; }
-        
-        .hidden { display: none !important; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -99,146 +49,25 @@
             <h3 style="margin: 0;">Post to Social Media</h3>
             <div class="share-grid">
                 <div class="photo-box">
-                    <img id="promoPhoto" src="https://via.placeholder.com/150?text=Get100+Promo" alt="Promo">
-                    <p style="font-size: 0.6rem; color: #94a3b8; margin-top: 5px;">Promo Image</p>
+                    <img id="promoPhoto" src="" alt="Promo">
                 </div>
                 <div class="caption-box">
-                    <div id="captionText">Get ₱100 now! Use my code #Get100 #Referral_CODE</div>
+                    <div id="captionText">Loading caption...</div>
                     <button class="copy-btn" id="btnCopyCaption"><i class="fa-solid fa-copy"></i> Copy</button>
                 </div>
             </div>
 
-            <div style="margin-top: 20px; background: #f1f5f9; padding: 12px; border-radius: 15px; font-size: 0.75rem;">
+            <div class="shortlink-box">
                 <strong>Short Link:</strong><br>
-                <a id="shortLink" href="#" style="color: var(--primary); text-decoration: none;">loading link...</a>
+                <a id="shortLink" href="#" target="_blank">loading...</a>
             </div>
 
-            <button class="btn" id="backToP1" style="background: none; color: #64748b; font-size: 0.8rem; margin-top: 15px;">← Back to Profile</button>
+            <button class="btn" id="backToP1" style="background:none; color:#64748b; font-size:0.8rem; margin-top:15px;">← Back to Profile</button>
         </div>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { 
-        getFirestore, doc, getDoc, updateDoc, collection, 
-        onSnapshot, query, orderBy, limit 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-        authDomain: "get100-8333e.firebaseapp.com",
-        projectId: "get100-8333e",
-        storageBucket: "get100-8333e.firebasestorage.app",
-        messagingSenderId: "242341429618",
-        appId: "1:242341429618:web:c596b279f746dc22851deb"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const activeUser = localStorage.getItem('active_user');
-
-    // UI State
-    const modal = document.getElementById('inviteModal');
-    const p1 = document.getElementById('modalPage1');
-    const p2 = document.getElementById('modalPage2');
-
-    // 1. AUTH & DATA SYNC
-    async function init() {
-        if (!activeUser) { window.location.href = "index.html"; return; }
-        document.getElementById('displayUserID').innerText = activeUser;
-
-        // Real-time Balance & Status Sync
-        onSnapshot(doc(db, "users", activeUser), (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById('mainBalance').innerText = (data.earnings || 0).toFixed(2);
-                
-                // Redeem Section Logic
-                if (data.Referral_status === "Redeem") {
-                    document.getElementById('redeemSection').classList.add('hidden');
-                }
-            }
-        });
-
-        // Load Global Content (Photos & Links)
-        const contentSnap = await getDoc(doc(db, "app_data", "global_configs"));
-        if (contentSnap.exists()) {
-            const config = contentSnap.data();
-            document.getElementById('promoPhoto').src = config.share_photo || "https://via.placeholder.com/150";
-            document.getElementById('shortLink').innerText = config.short_link || "https://bit.ly/get100";
-            document.getElementById('shortLink').href = config.short_link || "#";
-        }
-    }
-
-    // 2. MODAL LOGIC
-    document.getElementById('openInvite').onclick = () => modal.style.display = 'flex';
-    document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
-
-    document.getElementById('viewMyCode').onclick = async () => {
-        const snap = await getDoc(doc(db, "users", activeUser));
-        const myCode = snap.data().referralCode || "Generating...";
-        alert("Your Referral Code: " + myCode);
-    };
-
-    document.getElementById('goSharePage').onclick = async () => {
-        const snap = await getDoc(doc(db, "users", activeUser));
-        const code = snap.data().referralCode;
-        document.getElementById('captionText').innerText = `Get ₱100 instantly! Register here and use my code. #Get100 #Referral_${code}`;
-        p1.classList.add('hidden');
-        p2.classList.remove('hidden');
-    };
-
-    document.getElementById('backToP1').onclick = () => {
-        p2.classList.add('hidden');
-        p1.classList.remove('hidden');
-    };
-
-    // 3. VERIFY REFERRAL
-    document.getElementById('btnVerify').onclick = async () => {
-        const codeInput = document.getElementById('inputFriendCode').value.trim().toUpperCase();
-        const userRef = doc(db, "users", activeUser);
-        const snap = await getDoc(userRef);
-        const myData = snap.data();
-
-        if (codeInput === myData.referralCode) {
-            alert("Bawal gamitin ang sariling code!");
-            return;
-        }
-
-        if (codeInput.length === 6) {
-            await updateDoc(userRef, {
-                Referral_status: "Redeem",
-                earnings: (myData.earnings || 0) + 100
-            });
-            alert("Verification Success! +₱100 Added.");
-        }
-    };
-
-    // 4. COPY CAPTION
-    document.getElementById('btnCopyCaption').onclick = () => {
-        const text = document.getElementById('captionText').innerText;
-        navigator.clipboard.writeText(text);
-        alert("Caption Copied!");
-    };
-
-    // 5. LIVE WINNERS FEED
-    function spawnWinner() {
-        const id = "09" + Math.floor(Math.random()*90+10) + "****" + Math.floor(1000+Math.random()*9000);
-        const div = document.createElement('div');
-        div.className = "msg winner";
-        div.innerHTML = `<img src="images/gc_icon.png" class="gc-icon"> User ${id} received ₱100.00 GCash!`;
-        const logs = document.getElementById('chatLogs');
-        logs.appendChild(div);
-        logs.scrollTop = logs.scrollHeight;
-    }
-
-    window.onload = () => {
-        init();
-        setInterval(spawnWinner, 45000); // Bawat 45 seconds
-        setTimeout(spawnWinner, 2000); // Initial
-    };
-</script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
