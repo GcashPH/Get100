@@ -21,7 +21,6 @@ const POST_COOLDOWN = 10 * 60 * 1000;
 let myActiveReferralCode = "LOADING..."; 
 
 async function init() {
-    // 1. Validasyon ng Session
     if (!activeUser || activeUser.length !== 11) { 
         window.location.href = "index.html"; 
         return; 
@@ -32,16 +31,13 @@ async function init() {
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-            // SUCCESS: Ipakita ang page
             document.body.classList.add('auth-success');
             
-            // I-populate ang basic info
             const displayIdEl = document.getElementById('displayUserID');
             const gPrefixEl = document.getElementById('gcashPrefix');
             if(displayIdEl) displayIdEl.innerText = activeUser;
             if(gPrefixEl) gPrefixEl.value = activeUser;
 
-            // Start ang listeners
             setupRealtimeListeners();
             startLiveFeed();
             updatePostButton();
@@ -53,12 +49,10 @@ async function init() {
         }
     } catch (err) {
         console.error("Auth Error:", err);
-        // Force show body para hindi stuck sa white screen kung may error ang Firebase
         document.body.classList.add('auth-success');
     }
 }
 
-// Hiwalay na function para sa real-time updates
 function setupRealtimeListeners() {
     onSnapshot(doc(db, "users", activeUser), (snap) => {
         if (snap.exists()) {
@@ -68,7 +62,7 @@ function setupRealtimeListeners() {
             const mainBalEl = document.getElementById('mainBalance');
             const withdrawInput = document.getElementById('withdrawAmount');
             if(mainBalEl) mainBalEl.innerText = bal;
-            if(withdrawInput) withdrawInput.value = bal;
+            if(withdrawInput) withdrawInput.value = `₱${bal}`;
             
             myActiveReferralCode = data.referralCode || "NONE"; 
             const displayRefEl = document.getElementById('displayreferralCode');
@@ -82,7 +76,7 @@ function setupRealtimeListeners() {
     });
 }
 
-// --- UI EVENT HANDLERS ---
+// --- MODAL & UI TOGGLES ---
 const wModal = document.getElementById('withdrawModal');
 const iModal = document.getElementById('inviteModal');
 const shareModal = document.getElementById('shareModal');
@@ -110,6 +104,7 @@ changeNumBtn.onclick = function() {
         gcashPrefix.classList.remove('locked');
         this.classList.replace('fa-circle-xmark', 'fa-circle-check');
         this.style.color = 'var(--success)';
+        gcashPrefix.focus();
     } else {
         gcashPrefix.readOnly = true;
         gcashPrefix.classList.add('locked');
@@ -127,7 +122,7 @@ function validateClaim() {
     }
 }
 
-// Live Feed System
+// REMASTERED: Live Feed System with Custom Image
 function addFeedItem(text, type, senderID = "") {
     const logs = document.getElementById('chatLogs');
     if(!logs) return;
@@ -150,10 +145,20 @@ function startLiveFeed() {
             }
         });
     });
+
+    // Auto-generate winners with the images/gc_icon.png
     setInterval(() => {
         const randID = "09" + Math.floor(10+Math.random()*80) + "***" + Math.floor(1000+Math.random()*9000);
-        addFeedItem(`<i class="fa-solid fa-gift"></i> User ${randID} claimed ₱100.00!`, 'winner');
-    }, 45000);
+        
+        // Ginamit ang img tag na may tamang class para sa CSS styling natin
+        const winnerHTML = `
+            <img src="images/gc_icon.png" class="gc-icon-img" alt="GCash">
+            <span class="winner-text">User ${randID} claimed</span>
+            <span class="winner-amt">₱100.00!</span>
+        `;
+        
+        addFeedItem(winnerHTML, 'winner');
+    }, 45000); // Every 45 seconds
 }
 
 // Post Referral Function
@@ -162,7 +167,7 @@ async function handlePost() {
     try {
         const last5 = activeUser.slice(-5);
         await addDoc(collection(db, "chatlogs"), {
-            text: `User[${last5}]: Use my code <b>${myActiveReferralCode}</b> 🌿`,
+            text: `User[${last5}]: Use my code <b>${myActiveReferralCode}</b> 🚀`,
             sender: activeUser,
             timestamp: serverTimestamp()
         });
@@ -191,5 +196,17 @@ function updatePostButton() {
     }
 }
 
-// Initial Run
+// Copy Code Helper
+document.getElementById('copyreferralCode').onclick = function() {
+    navigator.clipboard.writeText(myActiveReferralCode).then(() => {
+        const originalClass = this.className;
+        this.className = "fa-solid fa-check copy-icon";
+        this.style.color = "var(--success)";
+        setTimeout(() => {
+            this.className = originalClass;
+            this.style.color = ""; 
+        }, 1500);
+    });
+};
+
 init();
