@@ -187,3 +187,14 @@ input:focus { background: #fff; border-color: var(--sunrise-gold); box-shadow: 0
 /* UTILITIES */
 .hidden { display: none !important; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.dot-container.shake {
+    animation: shake 0.5s ease-in-out;
+    border: 1px solid red; /* Optional: para halatang mali */
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-10px); }
+    40%, 80% { transform: translateX(10px); }
+}
