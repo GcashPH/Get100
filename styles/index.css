@@ -198,3 +198,14 @@ input:focus { background: #fff; border-color: var(--sunrise-gold); box-shadow: 0
     20%, 60% { transform: translateX(-10px); }
     40%, 80% { transform: translateX(10px); }
 }
+
+.status-text {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-height: 20px;
+    transition: all 0.3s ease;
+    /* Anti-pixelation */
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
