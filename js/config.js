@@ -30,34 +30,59 @@ let enteredPIN = "";
 let targetUserID = localStorage.getItem('local_userID');
 
 async function initGatekeeper() {
-    // STEP 1: AUTO-SCAN (5 SECONDS)
-    console.log("Scanning Device...");
-    
-    const scanTimer = new Promise(res => setTimeout(() => res("timeout"), 5000));
-    const dbCheck = (async () => {
-        if (!targetUserID) return null;
-        const userSnap = await getDoc(doc(db, "users", targetUserID));
+    console.log("Gatekeeper started. Specs:", currentSig, currentFP);
+
+    // 1. FAIL-SAFE TIMER (Ang 'Pilit' na taga-alis ng Loading Screen)
+    const forceProceed = setTimeout(() => {
+        if (!scanLayer.classList.contains('hidden')) {
+            console.warn("Scan timed out. Proceeding to Manual Input.");
+            showManualInputUI();
+            scanLayer.classList.add('hidden');
+            authLayer.classList.remove('hidden');
+        }
+    }, 5000); // 5 seconds max loading
+
+    try {
+        // 2. CHECK LOCAL DATA
+        if (!targetUserID) {
+            console.log("No local user found. Showing Manual UI.");
+            clearTimeout(forceProceed); // Patayin ang timer dahil tapos na tayo
+            showManualInputUI();
+            scanLayer.classList.add('hidden');
+            authLayer.classList.remove('hidden');
+            return;
+        }
+
+        // 3. DB SCAN (Kung may local_userID)
+        const userRef = doc(db, "users", targetUserID);
+        const userSnap = await getDoc(userRef);
+
+        clearTimeout(forceProceed); // Patayin ang timer kung sumagot agad ang DB
+
         if (userSnap.exists()) {
             const data = userSnap.data();
-            // Check kung match ang signature at fingerprint
-            if (data.signatures?.includes(currentSig) && data.fingerprint === currentFP) {
-                return data;
+            const isSigMatch = data.signatures?.includes(currentSig);
+            const isFPMatch = data.fingerprint === currentFP;
+
+            if (isSigMatch && isFPMatch) {
+                // RECOGNIZED: Ipakita ang Verify Access (Fingerprint Button)
+                showLoginUI(targetUserID, true);
+            } else {
+                // USER EXISTS PERO NEW DEVICE: Ipakita rin ang Verify Access (PIN required)
+                showLoginUI(targetUserID, false);
             }
+        } else {
+            // HINDI EXIST SA DB: Register mode
+            showManualInputUI();
         }
-        return null;
-    })();
 
-    const result = await Promise.race([scanTimer, dbCheck]);
-
-    scanLayer.classList.add('hidden');
-    authLayer.classList.remove('hidden');
-
-    if (result && result !== "timeout") {
-        // RECOGNIZED DEVICE
-        showLoginUI(targetUserID, true);
-    } else {
-        // UNRECOGNIZED OR NO LOCAL DATA
-        showManualInputUI();
+    } catch (err) {
+        console.error("Gatekeeper Error:", err);
+        showManualInputUI(); // Fallback sa manual input kung may database error
+    } finally {
+        // Siguraduhin na laging mawawala ang loading screen sa dulo
+        scanLayer.classList.add('hidden');
+        authLayer.classList.remove('hidden');
     }
 }
 
