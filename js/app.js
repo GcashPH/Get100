@@ -17,11 +17,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const activeUser = localStorage.getItem('active_user');
 
-const POST_COOLDOWN = 10 * 60 * 1000; // 10 mins
+const POST_COOLDOWN = 10 * 60 * 1000; 
 let myActiveReferralCode = "LOADING..."; 
 
 async function init() {
-    // 1. BASIC CHECK: Kung walang user sa local storage o hindi 11 digits
+    // 1. Validasyon ng Session
     if (!activeUser || activeUser.length !== 11) { 
         window.location.href = "index.html"; 
         return; 
@@ -32,142 +32,112 @@ async function init() {
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-            // SUCCESS: Recognized UserID. Ipakita ang dashboard.
-            // Siguraduhin na ang body ay hindi naka-hide sa CSS
-            document.body.style.display = "block"; 
+            // SUCCESS: Ipakita ang page
+            document.body.classList.add('auth-success');
             
-            // I-setup ang UI elements
+            // I-populate ang basic info
             const displayIdEl = document.getElementById('displayUserID');
             const gPrefixEl = document.getElementById('gcashPrefix');
-            
             if(displayIdEl) displayIdEl.innerText = activeUser;
             if(gPrefixEl) gPrefixEl.value = activeUser;
+
+            // Start ang listeners
+            setupRealtimeListeners();
+            startLiveFeed();
+            updatePostButton();
             
         } else {
-            // UserID ay wala sa database
             localStorage.clear();
             window.location.href = "index.html";
             return;
         }
     } catch (err) {
         console.error("Auth Error:", err);
-        // Huwag i-redirect agad para makita ang error sa console kung bakit nag-white screen
-        return;
+        // Force show body para hindi stuck sa white screen kung may error ang Firebase
+        document.body.classList.add('auth-success');
     }
+}
 
-    // 2. REAL-TIME BALANCE & REFERRAL CODE FETCHING
+// Hiwalay na function para sa real-time updates
+function setupRealtimeListeners() {
     onSnapshot(doc(db, "users", activeUser), (snap) => {
         if (snap.exists()) {
             const data = snap.data();
-            
-            // Balance Update
             const bal = (data.earnings || 0).toFixed(2);
+            
             const mainBalEl = document.getElementById('mainBalance');
             const withdrawInput = document.getElementById('withdrawAmount');
-            
             if(mainBalEl) mainBalEl.innerText = bal;
             if(withdrawInput) withdrawInput.value = bal;
             
-            // Referral Code
             myActiveReferralCode = data.referralCode || "NONE"; 
             const displayRefEl = document.getElementById('displayreferralCode');
             if(displayRefEl) displayRefEl.innerText = myActiveReferralCode;
             
-            // Promo Caption
             const captionEl = document.getElementById('promoCaption');
             if(captionEl) {
-                captionEl.value = `Earn 100 GCash Credits by Inviting Friends, Walang babayaran FREE! gamitin ang aking Referral Code: ${myActiveReferralCode}`;
-            }
-
-            // Hide redeem section
-            if (data.Referral_status === "Redeem") {
-                const rs = document.getElementById('redeemSection');
-                if(rs) rs.classList.add('hidden');
+                captionEl.value = `Earn 100 GCash Credits by Inviting Friends! FREE! Code: ${myActiveReferralCode}`;
             }
         }
     });
-
-    startLiveFeed();
-    updatePostButton();
 }
 
-// --- UI HELPERS (Modals, GCash Logic, Feed) ---
-
-// Modal Toggles
+// --- UI EVENT HANDLERS ---
 const wModal = document.getElementById('withdrawModal');
 const iModal = document.getElementById('inviteModal');
 const shareModal = document.getElementById('shareModal');
 
-if(document.getElementById('openWithdraw')) document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
-if(document.getElementById('closeWithdraw')) document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
-if(document.getElementById('openInvite')) document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
-if(document.getElementById('closeModal')) document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
+document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
+document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
+document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
+document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
 
-if(document.getElementById('openShareModal')) {
-    document.getElementById('openShareModal').onclick = () => {
-        iModal.style.display = 'none'; 
-        shareModal.style.display = 'flex'; 
-    };
-}
-if(document.getElementById('closeShareModal')) {
-    document.getElementById('closeShareModal').onclick = () => {
-        shareModal.style.display = 'none';
-    };
-}
+document.getElementById('openShareModal').onclick = () => {
+    iModal.style.display = 'none'; 
+    shareModal.style.display = 'flex'; 
+};
+document.getElementById('closeShareModal').onclick = () => shareModal.style.display = 'none';
 
-// GCash Validation
+// GCash Edit Number Logic
 const changeNumBtn = document.getElementById('changeNumber');
 const gcashPrefix = document.getElementById('gcashPrefix');
 const gcashConfirm = document.getElementById('gcashConfirm');
 const btnClaim = document.getElementById('btnClaimGcash');
 
-if(changeNumBtn) {
-    changeNumBtn.onclick = function() {
-        if (gcashPrefix.readOnly) {
-            gcashPrefix.readOnly = false;
-            gcashPrefix.classList.remove('locked');
-            gcashPrefix.focus();
-            this.classList.replace('fa-circle-xmark', 'fa-circle-check');
-            this.style.color = 'var(--success)';
-        } else {
-            gcashPrefix.readOnly = true;
-            gcashPrefix.classList.add('locked');
-            this.classList.replace('fa-circle-check', 'fa-circle-xmark');
-            this.style.color = 'var(--warning)';
-        }
-        validateClaim(); 
-    };
-}
+changeNumBtn.onclick = function() {
+    if (gcashPrefix.readOnly) {
+        gcashPrefix.readOnly = false;
+        gcashPrefix.classList.remove('locked');
+        this.classList.replace('fa-circle-xmark', 'fa-circle-check');
+        this.style.color = 'var(--success)';
+    } else {
+        gcashPrefix.readOnly = true;
+        gcashPrefix.classList.add('locked');
+        this.classList.replace('fa-circle-check', 'fa-circle-xmark');
+        this.style.color = 'var(--warning)';
+    }
+    validateClaim(); 
+};
 
 if(gcashConfirm) gcashConfirm.oninput = validateClaim;
 
 function validateClaim() {
     if (btnClaim && gcashConfirm && gcashPrefix) {
-        btnClaim.disabled = !(gcashConfirm.value === gcashPrefix.value && gcashPrefix.value.trim() !== '');
+        btnClaim.disabled = !(gcashConfirm.value === gcashPrefix.value && gcashPrefix.value.length === 11);
     }
 }
 
-// Live Feed Logic
+// Live Feed System
 function addFeedItem(text, type, senderID = "") {
     const logs = document.getElementById('chatLogs');
     if(!logs) return;
     const div = document.createElement('div');
     const isMe = senderID === activeUser;
     
-    let specificClass = 'user-msg';
-    if (type === 'winner') specificClass = 'winner-msg';
-    else if (isMe) specificClass = 'my-msg';
-
-    div.className = `msg ${specificClass}`;
+    div.className = `msg ${type === 'winner' ? 'winner-msg' : (isMe ? 'my-msg' : 'user-msg')}`;
     div.innerHTML = text;
-    
     logs.prepend(div); 
-    if (logs.childNodes.length > 20) logs.removeChild(logs.lastChild);
-}
-
-function spawnWinner() {
-    const randID = "09" + Math.floor(Math.random()*90+10) + "***" + Math.floor(1000+Math.random()*9000);
-    addFeedItem(`<i class="fa-solid fa-gift"></i> User ${randID} claimed ₱100.00 GCash!`, 'winner');
+    if (logs.childNodes.length > 15) logs.removeChild(logs.lastChild);
 }
 
 function startLiveFeed() {
@@ -180,83 +150,46 @@ function startLiveFeed() {
             }
         });
     });
-    spawnWinner();
-    setInterval(spawnWinner, 60000); 
+    setInterval(() => {
+        const randID = "09" + Math.floor(10+Math.random()*80) + "***" + Math.floor(1000+Math.random()*9000);
+        addFeedItem(`<i class="fa-solid fa-gift"></i> User ${randID} claimed ₱100.00!`, 'winner');
+    }, 45000);
 }
 
-// Post Referral Logic
+// Post Referral Function
+async function handlePost() {
+    const btn = document.getElementById('btnPostRef');
+    try {
+        const last5 = activeUser.slice(-5);
+        await addDoc(collection(db, "chatlogs"), {
+            text: `User[${last5}]: Use my code <b>${myActiveReferralCode}</b> 🌿`,
+            sender: activeUser,
+            timestamp: serverTimestamp()
+        });
+        localStorage.setItem('last_post_time', Date.now().toString());
+        updatePostButton();
+    } catch (err) { console.error(err); }
+}
+document.getElementById('btnPostRef').onclick = handlePost;
+
 function updatePostButton() {
     const lastPost = localStorage.getItem('last_post_time');
     const btn = document.getElementById('btnPostRef');
-    const timerBox = document.getElementById('cooldownTimer');
-    
-    if(!btn) return;
-    if (lastPost) {
-        const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
-        if (remaining > 0) {
-            btn.disabled = true;
-            if(timerBox) timerBox.classList.remove('hidden');
-            runCountdown(remaining);
-            return;
-        }
+    if (!lastPost) return;
+
+    const remaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
+    if (remaining > 0) {
+        btn.disabled = true;
+        document.getElementById('cooldownTimer').classList.remove('hidden');
+        setTimeout(updatePostButton, 1000);
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+    } else {
+        btn.disabled = false;
+        document.getElementById('cooldownTimer').classList.add('hidden');
     }
-    btn.disabled = false;
-    if(timerBox) timerBox.classList.add('hidden');
 }
 
-function runCountdown(ms) {
-    const span = document.getElementById('timer');
-    const int = setInterval(() => {
-        const lastPost = localStorage.getItem('last_post_time');
-        const nowRemaining = parseInt(lastPost) + POST_COOLDOWN - Date.now();
-        if (nowRemaining <= 0) {
-            clearInterval(int);
-            updatePostButton();
-        } else {
-            const m = Math.floor(nowRemaining / 60000);
-            const s = Math.floor((nowRemaining % 60000) / 1000);
-            if(span) span.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-        }
-    }, 1000);
-}
-
-if(document.getElementById('btnPostRef')) {
-    document.getElementById('btnPostRef').onclick = async () => {
-        try {
-            const userSnap = await getDoc(doc(db, "users", activeUser));
-            if (!userSnap.exists()) return;
-
-            const code = userSnap.data().referralCode || "GET100";
-            const last5 = activeUser.slice(-5);
-            const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
-
-            await addDoc(collection(db, "chatlogs"), {
-                text: postText,
-                sender: activeUser,
-                timestamp: serverTimestamp()
-            });
-
-            localStorage.setItem('last_post_time', Date.now().toString());
-            updatePostButton();
-        } catch (err) {
-            console.error("Post Error:", err);
-        }
-    };
-}
-
-// Clipboard Helper
-function copyToClipboard(textToCopy, iconElement) {
-    if(!textToCopy) return;
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        const originalClass = iconElement.className;
-        iconElement.className = "fa-solid fa-check text-success";
-        iconElement.style.color = "#00b894";
-        setTimeout(() => {
-            iconElement.className = originalClass;
-            iconElement.style.color = ""; 
-        }, 1500);
-    });
-}
-
-// Listen for Init
-window.onload = init;
+// Initial Run
+init();
