@@ -49,7 +49,7 @@ function prepareLogin(uid) {
     authMode = "LOGIN";
     uiSubtitle.innerText = "Enter Secret Keys to Access";
     userBadge.classList.remove('hidden');
-    document.getElementById('masked-id').innerText = uid.replace(/(\d{2})(\d{5})(\d{4})/, "$1******$3");
+    document.getElementById('masked-id').innerText = uid.replace(/(\d{2})(\d{5})(\d{4})/, "$1*****$3");
     mobileBox.classList.add('hidden');
     keypadSection.classList.remove('hidden');
 }
