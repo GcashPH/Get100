@@ -3,108 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Social Rewards | Mobile View</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Dashboard | SocialConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles/style.css">
 </head>
-<body>
+<body id="main-body">
 
     <div class="mobile-container">
         <div class="glass-panel text-center">
-            <div class="panel-subtitle">AVAILABLE BALANCE</div>
-            <div class="balance-display">₱<span id="mainBalance">0.00</span></div>
+            <p class="panel-subtitle">CURRENT BALANCE</p>
+            <h1 class="balance-display"><span class="currency">₱</span><span id="mainBalance">0.00</span></h1>
             <div class="button-row">
-                <button class="btn btn-action" id="openWithdraw"><i class="fa-solid fa-wallet"></i> CASH OUT</button>
-                <button class="btn btn-action" id="openInvite"><i class="fa-solid fa-user-plus"></i> INVITE</button>
+                <button id="openWithdraw" class="btn btn-action"><i class="fa-solid fa-building-columns"></i> WITHDRAW</button>
+                <button id="openInvite" class="btn btn-action"><i class="fa-solid fa-user-plus"></i> INVITE</button>
             </div>
         </div>
 
         <div class="glass-panel feed-panel">
-            <div class="panel-header"><i class="fa-solid fa-satellite-dish"></i> LIVE NETWORK FEED</div>
-            <div class="chat-area" id="chatLogs"></div>
-            <div class="post-area">
-                <button class="btn btn-post" id="btnPostRef">POST MY REFERRAL CODE</button>
-                <div id="cooldownTimer" class="timer-text hidden">Available in: <span id="timer">00:00</span></div>
+            <div class="feed-header">
+                <p class="panel-header"><i class="fa-solid fa-chart-line"></i> LIVE ACTIVITY</p>
+                <span class="live-indicator">LIVE</span>
             </div>
+            
+            <div id="chatLogs" class="chat-area">
+                </div>
+            
+            <button id="btnPostRef" class="btn btn-post">POST REFERRAL CODE <i class="fa-solid fa-paper-plane"></i></button>
+            <div id="cooldownTimer" class="timer-text hidden">Next post in: <span id="timer">0:00</span></div>
+        </div>
+
+        <div class="glass-panel text-center">
+            <p class="panel-subtitle">LOGGED IN AS</p>
+            <p id="displayUserID" class="user-id-text"></p>
         </div>
     </div>
 
-    <div class="modal-overlay" id="withdrawModal">
+    <div id="withdrawModal" class="modal-overlay">
         <div class="modal-card">
-            <button class="btn-close" id="closeWithdraw"><i class="fa-solid fa-xmark"></i></button>
-            <h2 class="modal-title">Cash Out</h2>
+            <button id="closeWithdraw" class="btn-close">&times;</button>
+            <div class="modal-header-icon"><i class="fa-solid fa-wallet"></i></div>
+            <h2 class="modal-title">Withdraw Funds</h2>
+            
             <div class="form-group">
-                <label>Amount to Withdraw</label>
-                <input type="text" id="withdrawAmount" class="input-box locked" readonly>
-            </div>
-            <div class="form-group">
-                <label>GCash Account Number</label>
+                <label>GCash Number</label>
                 <div class="input-with-icon">
-                    <input type="text" id="gcashPrefix" class="input-box locked" readonly>
-                    <i class="fa-solid fa-circle-xmark icon-btn" id="changeNumber"></i>
+                    <input type="tel" id="gcashPrefix" class="input-box locked" readonly>
+                    <i id="changeNumber" class="fa-solid fa-circle-xmark icon-btn"></i>
                 </div>
             </div>
             <div class="form-group">
-                <label>Confirm Account Number</label>
-                <input type="text" id="gcashConfirm" class="input-box" placeholder="Retype number here..." onpaste="return false;">
+                <label>Confirm Number</label>
+                <input type="tel" id="gcashConfirm" class="input-box" placeholder="Re-enter 11-digit number">
             </div>
-            <button class="btn btn-submit" id="btnClaimGcash" disabled>CLAIM THRU GCASH</button>
+            <div class="form-group">
+                <label>Amount Available</label>
+                <input type="text" id="withdrawAmount" class="input-box locked amount-box" readonly>
+            </div>
+            <button id="btnClaimGcash" class="btn btn-submit" disabled>CONFIRM WITHDRAWAL</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="inviteModal">
-        <div class="modal-card">
-            <button class="btn-close" id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+    <div id="inviteModal" class="modal-overlay">
+        <div class="modal-card text-center">
+            <button id="closeModal" class="btn-close">&times;</button>
+            <div class="modal-header-icon highlight"><i class="fa-solid fa-gift"></i></div>
             <h2 class="modal-title">Invite Friends</h2>
             
             <div class="user-id-wrapper">
-                <p>YOUR ACCOUNT ID</p>
-                <h1 id="displayUserID">09000000000</h1>
-                
-                <div class="ref-code-display">
-                    <span class="ref-label">My Code:</span>
-                    <span id="displayMyCode" class="ref-value">LOADING</span>
-                    <i class="fa-regular fa-copy copy-icon" id="copyMyCode" title="Copy Code"></i>
+                <p>YOUR REFERRAL CODE</p>
+                <div class="code-display-area">
+                    <h1 id="displayreferralCode">LOADING...</h1>
+                    <i id="copyreferralCode" class="fa-solid fa-copy copy-icon"></i>
                 </div>
             </div>
-
-            <div class="form-group" id="redeemSection">
-                <label class="text-center" style="display:block;">REDEEM CODE</label>
-                <input type="text" id="inputFriendCode" class="input-box text-center" placeholder="ENTER 6-DIGIT CODE">
-                <button class="btn btn-submit mt-10" id="btnVerify">VERIFY CODE</button>
-            </div>
-
-            <button class="btn btn-facebook mt-10" id="openShareModal"><i class="fa-brands fa-facebook"></i> SHARE ON FACEBOOK</button>
+            <button id="openShareModal" class="btn btn-facebook"><i class="fa-brands fa-facebook"></i> SHARE ON FACEBOOK</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="shareModal">
-        <div class="modal-card" style="padding: 20px;">
-            <button class="btn-close" id="closeShareModal"><i class="fa-solid fa-xmark"></i></button>
-            <h2 class="modal-title" style="font-size: 1.5rem; margin-bottom: 15px;">Share to FB</h2>
-            
-            <div class="share-top text-center">
-                <img src="https://images.unsplash.com/photo-1613535850937-58f86f8a846c?auto=format&fit=crop&w=600&q=80" alt="Promo Photo" class="promo-img" id="promoImage">
-                <button class="btn btn-action mt-10" id="btnDownloadImg"><i class="fa-solid fa-download"></i> DOWNLOAD PHOTO</button>
-            </div>
-
-            <div class="share-bottom mt-10">
-                <textarea id="promoCaption" class="input-box text-sm" rows="3" readonly></textarea>
-                <button class="btn btn-action mt-10" id="btnCopyCaption"><i class="fa-regular fa-copy"></i> COPY CAPTION</button>
-                
-                <div class="double-line"></div>
-                
-                <button class="btn btn-facebook" id="btnPostToFB">POST TO FACEBOOK</button>
-                
-                <div class="double-line"></div>
-
-                <p class="text-center text-sm mb-5">Or copy this url para makapag-invite:</p>
-                <div class="input-with-icon">
-                    <input type="text" id="shareUrl" class="input-box locked text-sm" value="https://shorturl.com/aBcD1" readonly>
-                    <i class="fa-regular fa-copy icon-btn text-primary" id="btnCopyUrl"></i>
-                </div>
-            </div>
+    <div id="shareModal" class="modal-overlay">
+        <div class="modal-card">
+            <button id="closeShareModal" class="btn-close">&times;</button>
+            <h2 class="modal-title">Share Promo</h2>
+            <textarea id="promoCaption" class="input-box" rows="4" readonly></textarea>
+            <button id="btnCopyCaption" class="btn btn-action mt-10" style="width: 100%;">COPY CAPTION <i class="fa-solid fa-copy"></i></button>
         </div>
     </div>
 
