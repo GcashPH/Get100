@@ -5,7 +5,16 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- 1. CONFIGURATION ---
-const firebaseConfig = { /* IYONG CONFIG */ };
+const firebaseConfig = {
+  apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
+  authDomain: "get100-8333e.firebaseapp.com",
+  databaseURL: "https://get100-8333e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "get100-8333e",
+  storageBucket: "get100-8333e.firebasestorage.app",
+  messagingSenderId: "242341429618",
+  appId: "1:242341429618:web:c596b279f746dc22851deb",
+  measurementId: "G-Y8TW2M3494"
+};
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
