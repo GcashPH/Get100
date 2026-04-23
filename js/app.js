@@ -4,39 +4,35 @@ import {
     onSnapshot, query, orderBy, limit, serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// --- 1. CONFIGURATION ---
 const firebaseConfig = {
-  apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
-  authDomain: "get100-8333e.firebaseapp.com",
-  databaseURL: "https://get100-8333e-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "get100-8333e",
-  storageBucket: "get100-8333e.firebasestorage.app",
-  messagingSenderId: "242341429618",
-  appId: "1:242341429618:web:c596b279f746dc22851deb",
-  measurementId: "G-Y8TW2M3494"
+    apiKey: "AIzaSyAK5I_7WeKouFM08SeOZcDHrXsgckYoULg",
+    authDomain: "get100-8333e.firebaseapp.com",
+    projectId: "get100-8333e",
+    storageBucket: "get100-8333e.firebasestorage.app",
+    messagingSenderId: "242341429618",
+    appId: "1:242341429618:web:c596b279f746dc22851deb"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 const activeUser = localStorage.getItem('active_user');
-const POST_COOLDOWN = 10 * 60 * 1000; 
+
+const POST_COOLDOWN = 10 * 60 * 1000; // 10 mins
+
+// Global variable for user code
 let myActiveReferralCode = "LOADING..."; 
 
-// Dapat eksaktong match ito sa index.js para hindi ma-kickout ang user
+// --- NEW: DEVICE SIGNATURE GENERATOR ---
 const getDeviceSignature = () => {
     return btoa(navigator.userAgent + screen.width + screen.height).slice(0, 24);
 };
 
-// --- 2. THE GATEKEEPER (init function) ---
 async function init() {
-    // A. Check kung may session
-    if (!activeUser || activeUser.length !== 11) {
-        window.location.href = "index.html";
-        return;
-    }
+    // 1. BASIC CHECK: Kung walang user sa local storage
+    if (!activeUser) { window.location.href = "index.html"; return; }
     
+    // 2. SECURITY CHECK: I-verify kung authorized ang device signature
     const currentSig = getDeviceSignature();
-
     try {
         const userRef = doc(db, "users", activeUser);
         const userSnap = await getDoc(userRef);
@@ -45,83 +41,126 @@ async function init() {
             const userData = userSnap.data();
             const authorizedSigs = userData.signatures || [];
 
-            // B. Security Check: Kung recognized ang device
+            // Kung ang current device ay wala sa listahan ng signatures ng user
             if (!authorizedSigs.includes(currentSig)) {
                 console.error("Unauthorized device signature.");
-                alert("Security: Device not recognized. Please login again.");
                 localStorage.clear();
                 window.location.href = "index.html";
                 return;
             }
             
-            // C. SUCCESS: I-setup ang UI bago ipakita ang body
-            renderUserBasics(userData);
-            setupDashboard(); // ITO ANG TATAWAG SA PAGPAPAKITA NG BODY
+            // Kung okay ang signature, ituloy ang UI Setup
+            document.getElementById('displayUserID').innerText = activeUser;
+            document.getElementById('gcashPrefix').value = activeUser;
             
-            // D. Start Real-time Listeners
-            listenToUserData(userRef);
-            startLiveFeed();
-            updatePostButton();
-
         } else {
-            // User ID not in Database
             localStorage.clear();
             window.location.href = "index.html";
+            return;
         }
     } catch (err) {
-        console.error("Critical Auth Error:", err);
-        // Huwag agad i-kickout kung baka connection issue lang, pero i-log ito
+        console.error("Auth Error:", err);
+        window.location.href = "index.html";
+        return;
+    }
+
+    // 3. REAL-TIME BALANCE & REFERRAL CODE FETCHING (Existing Logic)
+    onSnapshot(doc(db, "users", activeUser), (snap) => {
+        if (snap.exists()) {
+            const data = snap.data();
+            
+            // Balance
+            const bal = (data.earnings || 0).toFixed(2);
+            document.getElementById('mainBalance').innerText = bal;
+            document.getElementById('withdrawAmount').value = bal;
+            
+            // Kunin ang referral code mula sa database
+            myActiveReferralCode = data.referralCode || "NONE"; 
+            
+            // I-display sa Invite Modal
+            const displayRefEl = document.getElementById('displayreferralCode');
+            if(displayRefEl) displayRefEl.innerText = myActiveReferralCode;
+            
+            // I-update ang Facebook Promo Caption
+            const captionEl = document.getElementById('promoCaption');
+            if(captionEl) {
+                captionEl.value = `Earn 100 GCash Credits by Inviting Friends, Walang babayaran FREE! gamitin ang aking Referral Code: ${myActiveReferralCode}`;
+            }
+
+            // Hide redeem section kung nagamit na
+            if (data.Referral_status === "Redeem") {
+                const rs = document.getElementById('redeemSection');
+                if(rs) rs.classList.add('hidden');
+            }
+        } else {
+            console.log("User data not found in database!");
+            document.getElementById('displayreferralCode').innerText = "ERROR";
+        }
+    });
+
+    startLiveFeed();
+    updatePostButton();
+}
+
+// 4. MODAL TOGGLES (Existing Logic)
+const wModal = document.getElementById('withdrawModal');
+const iModal = document.getElementById('inviteModal');
+const shareModal = document.getElementById('shareModal');
+
+if(document.getElementById('openWithdraw')) document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
+if(document.getElementById('closeWithdraw')) document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
+
+if(document.getElementById('openInvite')) document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
+if(document.getElementById('closeModal')) document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
+
+// Toggle Share Modal
+if(document.getElementById('openShareModal')) {
+    document.getElementById('openShareModal').onclick = () => {
+        iModal.style.display = 'none'; 
+        shareModal.style.display = 'flex'; 
+    };
+}
+if(document.getElementById('closeShareModal')) {
+    document.getElementById('closeShareModal').onclick = () => {
+        shareModal.style.display = 'none';
+    };
+}
+
+// 5. GCASH LOGIC & CHANGE NUMBER (Existing Logic)
+const changeNumBtn = document.getElementById('changeNumber');
+const gcashPrefix = document.getElementById('gcashPrefix');
+const gcashConfirm = document.getElementById('gcashConfirm');
+const btnClaim = document.getElementById('btnClaimGcash');
+
+if(changeNumBtn) {
+    changeNumBtn.onclick = function() {
+        if (gcashPrefix.readOnly) {
+            gcashPrefix.readOnly = false;
+            gcashPrefix.classList.remove('locked');
+            gcashPrefix.focus();
+            this.classList.replace('fa-circle-xmark', 'fa-circle-check');
+            this.style.color = 'var(--success)';
+        } else {
+            gcashPrefix.readOnly = true;
+            gcashPrefix.classList.add('locked');
+            this.classList.replace('fa-circle-check', 'fa-circle-xmark');
+            this.style.color = 'var(--warning)';
+        }
+        validateClaim(); 
+    };
+}
+
+if(gcashConfirm) gcashConfirm.oninput = validateClaim;
+
+function validateClaim() {
+    if (gcashConfirm.value === gcashPrefix.value && gcashPrefix.value.trim() !== '') {
+        btnClaim.disabled = false;
+    } else {
+        btnClaim.disabled = true;
     }
 }
 
-// --- 3. UI RENDERING FUNCTIONS ---
-
-function renderUserBasics(data) {
-    const displayID = document.getElementById('displayUserID');
-    const gPrefix = document.getElementById('gcashPrefix');
-    
-    if(displayID) displayID.innerText = activeUser;
-    if(gPrefix) gPrefix.value = activeUser;
-}
-
-function setupDashboard() {
-    // Eto ang papatay sa "White Screen"
-    document.body.style.display = "block"; 
-    console.log("Dashboard fully authorized and visible.");
-}
-
-// Real-time updates para sa Balance at Referral Code
-function listenToUserData(userRef) {
-    onSnapshot(userRef, (snap) => {
-        if (!snap.exists()) return;
-        const data = snap.data();
-        
-        // Update Balance
-        const bal = (data.earnings || 0).toFixed(2);
-        const mainBalEl = document.getElementById('mainBalance');
-        const withdrawInput = document.getElementById('withdrawAmount');
-        
-        if(mainBalEl) mainBalEl.innerText = bal;
-        if(withdrawInput) withdrawInput.value = bal;
-        
-        // Update Referral Logic
-        myActiveReferralCode = data.referralCode || "NONE";
-        const displayRefEl = document.getElementById('displayreferralCode');
-        if(displayRefEl) displayRefEl.innerText = myActiveReferralCode;
-        
-        const captionEl = document.getElementById('promoCaption');
-        if(captionEl) {
-            captionEl.value = `Earn 100 GCash Credits by Inviting Friends FREE! Use my Referral Code: ${myActiveReferralCode}`;
-        }
-
-        if (data.Referral_status === "Redeem") {
-            const rs = document.getElementById('redeemSection');
-            if(rs) rs.classList.add('hidden');
-        }
-    });
-}
-
-// --- 4. LIVE FEED & CHAT LOGIC ---
+// 6. LIVE FEED LOGIC (Existing Logic)
 function addFeedItem(text, type, senderID = "") {
     const logs = document.getElementById('chatLogs');
     if(!logs) return;
@@ -154,67 +193,12 @@ function startLiveFeed() {
             }
         });
     });
+
     spawnWinner();
     setInterval(spawnWinner, 60000); 
 }
 
-// --- 5. MODAL & GCASH LOGIC ---
-function setupEventListeners() {
-    const wModal = document.getElementById('withdrawModal');
-    const iModal = document.getElementById('inviteModal');
-    const shareModal = document.getElementById('shareModal');
-
-    // Modals
-    if(document.getElementById('openWithdraw')) document.getElementById('openWithdraw').onclick = () => wModal.style.display = 'flex';
-    if(document.getElementById('closeWithdraw')) document.getElementById('closeWithdraw').onclick = () => wModal.style.display = 'none';
-    if(document.getElementById('openInvite')) document.getElementById('openInvite').onclick = () => iModal.style.display = 'flex';
-    if(document.getElementById('closeModal')) document.getElementById('closeModal').onclick = () => iModal.style.display = 'none';
-
-    if(document.getElementById('openShareModal')) {
-        document.getElementById('openShareModal').onclick = () => {
-            iModal.style.display = 'none'; 
-            shareModal.style.display = 'flex'; 
-        };
-    }
-    if(document.getElementById('closeShareModal')) document.getElementById('closeShareModal').onclick = () => shareModal.style.display = 'none';
-
-    // GCash Number Edit
-    const changeNumBtn = document.getElementById('changeNumber');
-    const gPrefix = document.getElementById('gcashPrefix');
-    const gConfirm = document.getElementById('gcashConfirm');
-
-    if(changeNumBtn) {
-        changeNumBtn.onclick = function() {
-            if (gPrefix.readOnly) {
-                gPrefix.readOnly = false;
-                gPrefix.classList.remove('locked');
-                gPrefix.focus();
-                this.classList.replace('fa-circle-xmark', 'fa-circle-check');
-                this.style.color = '#00b894';
-            } else {
-                gPrefix.readOnly = true;
-                gPrefix.classList.add('locked');
-                this.classList.replace('fa-circle-check', 'fa-circle-xmark');
-                this.style.color = '#ff7675';
-            }
-            validateClaim(); 
-        };
-    }
-    if(gConfirm) gConfirm.oninput = validateClaim;
-}
-
-function validateClaim() {
-    const gPrefix = document.getElementById('gcashPrefix');
-    const gConfirm = document.getElementById('gcashConfirm');
-    const btnClaim = document.getElementById('btnClaimGcash');
-    if (gConfirm.value === gPrefix.value && gPrefix.value.trim() !== '') {
-        btnClaim.disabled = false;
-    } else {
-        btnClaim.disabled = true;
-    }
-}
-
-// --- 6. POSTING & CLIPBOARD LOGIC ---
+// 7. POST REFERRAL LOGIC (Existing Logic)
 function updatePostButton() {
     const lastPost = localStorage.getItem('last_post_time');
     const btn = document.getElementById('btnPostRef');
@@ -250,12 +234,15 @@ function runCountdown(ms) {
     }, 1000);
 }
 
-// Global Event for Posting
-document.addEventListener('click', async (e) => {
-    if(e.target && e.target.id === 'btnPostRef') {
+if(document.getElementById('btnPostRef')) {
+    document.getElementById('btnPostRef').onclick = async () => {
         try {
+            const userSnap = await getDoc(doc(db, "users", activeUser));
+            if (!userSnap.exists()) return;
+
+            const code = userSnap.data().referralCode || "GET100";
             const last5 = activeUser.slice(-5);
-            const postText = `User[${last5}]: Join using my code <b>${myActiveReferralCode}</b> 🌿`;
+            const postText = `User[${last5}]: Join using my code <b>${code}</b> 🌿`;
 
             await addDoc(collection(db, "chatlogs"), {
                 text: postText,
@@ -265,19 +252,65 @@ document.addEventListener('click', async (e) => {
 
             localStorage.setItem('last_post_time', Date.now().toString());
             updatePostButton();
-        } catch (err) { console.error(err); }
-    }
-});
+        } catch (err) {
+            console.error("Post Error:", err);
+        }
+    };
+}
 
-// Clipboard Helper
-window.copyToClipboard = (textToCopy, element) => {
+// --- COPY & SHARE FLOW LOGIC (Existing Logic) ---
+
+function copyToClipboard(textToCopy, iconElement) {
     if(!textToCopy) return;
     navigator.clipboard.writeText(textToCopy).then(() => {
-        const icon = element.querySelector('i') || element;
-        const originalClass = icon.className;
-        icon.className = "fa-solid fa-check";
-        setTimeout(() => icon.className = originalClass, 1500);
+        const originalClass = iconElement.className;
+        iconElement.className = "fa-solid fa-check text-success";
+        iconElement.style.color = "#00b894";
+        setTimeout(() => {
+            iconElement.className = originalClass;
+            iconElement.style.color = ""; 
+        }, 1500);
     });
-};
+}
+
+if(document.getElementById('copyreferralCode')) {
+    document.getElementById('copyreferralCode').onclick = function() {
+        copyToClipboard(document.getElementById('displayreferralCode').innerText, this);
+    };
+}
+
+if(document.getElementById('btnCopyCaption')) {
+    document.getElementById('btnCopyCaption').onclick = function() {
+        const caption = document.getElementById('promoCaption').value;
+        const icon = this.querySelector('i');
+        copyToClipboard(caption, icon);
+    };
+}
+
+if(document.getElementById('btnCopyUrl')) {
+    document.getElementById('btnCopyUrl').onclick = function() {
+        const url = document.getElementById('shareUrl').value;
+        copyToClipboard(url, this);
+    };
+}
+
+if(document.getElementById('btnDownloadImg')) {
+    document.getElementById('btnDownloadImg').onclick = function() {
+        const imgSrc = document.getElementById('promoImage').src;
+        const a = document.createElement('a');
+        a.href = imgSrc;
+        a.download = "Promo_Image.jpg"; 
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+}
+
+if(document.getElementById('btnPostToFB')) {
+    document.getElementById('btnPostToFB').onclick = function() {
+        const shareUrl = encodeURIComponent("https://yourwebsite.com");
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
+    };
+}
 
 window.onload = init;
