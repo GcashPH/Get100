@@ -14,6 +14,84 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// --- DEVICE FINGERPRINT GENERATOR ---
+function generateDeviceSignature() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const txt = 'SocialConnect-Auth-v1.1';
+    ctx.textBaseline = "top";
+    ctx.font = "14px 'Arial'";
+    ctx.fillText(txt, 2, 2);
+    // Nag-ge-generate ito ng unique string base sa graphics card at browser engine ng device
+    const b64 = canvas.toDataURL().replace("data:image/png;base64,", "");
+    const bin = atob(b64.slice(-100, -50));
+    let hash = 0;
+    for (let i = 0; i < bin.length; i++) {
+        hash = ((hash << 5) - hash) + bin.charCodeAt(i);
+        hash |= 0;
+    }
+    return "SIG-" + Math.abs(hash) + "-" + navigator.userAgent.length;
+}
+
+const secretInput = document.getElementById('secretKeyInput');
+
+// --- AUTOMATIC ENTER LOGIC ---
+if (secretInput) {
+    secretInput.oninput = function() {
+        // Kapag umabot ng 11 digits (GCash format), automatic mag-e-enter
+        if (this.value.length === 11) {
+            processLogin(this.value);
+        }
+    };
+}
+
+async function processLogin(userID) {
+    const statusEl = document.getElementById('authStatus');
+    statusEl.innerText = "Verifying device...";
+    
+    const deviceSig = generateDeviceSignature();
+
+    try {
+        const userRef = doc(db, "users", userID);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            const userData = userSnap.data();
+
+            // CHECK DEVICE LOCK
+            if (userData.DeviceSignature && userData.DeviceSignature !== deviceSig) {
+                statusEl.innerText = "Error: This account is locked to another device.";
+                statusEl.style.color = "#ff7675";
+                return;
+            }
+
+            // REGISTER DEVICE IF NEW
+            if (!userData.DeviceSignature) {
+                await updateDoc(userRef, {
+                    DeviceSignature: deviceSig,
+                    LastLogin: new Date().toISOString()
+                });
+            }
+
+            // SUCCESS
+            localStorage.setItem('active_user', userID);
+            statusEl.innerText = "Access Granted! Redirecting...";
+            statusEl.style.color = "#00b894";
+            
+            setTimeout(() => {
+                window.location.href = "main.html";
+            }, 1000);
+
+        } else {
+            statusEl.innerText = "Invalid Key. Access Denied.";
+            statusEl.style.color = "#ff7675";
+        }
+    } catch (err) {
+        console.error(err);
+        statusEl.innerText = "Connection Error.";
+    }
+}
+
 // DOM Elements
 const scanLayer = document.getElementById('scan-layer');
 const authLayer = document.getElementById('auth-layer');
