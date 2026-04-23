@@ -305,12 +305,3 @@ if(document.getElementById('btnDownloadImg')) {
         document.body.removeChild(a);
     };
 }
-
-if(document.getElementById('btnPostToFB')) {
-    document.getElementById('btnPostToFB').onclick = function() {
-        const shareUrl = encodeURIComponent("https://yourwebsite.com");
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank');
-    };
-}
-
-window.onload = init;
